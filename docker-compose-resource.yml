@@ -1,0 +1,8 @@
+services:
+  mysql:
+    image: mysql:8.0.32
+    environment:
+      MYSQL_ROOT_PASSWORD: 1q2w3e4r
+      MYSQL_DATABASE: ssook
+    ports:
+      - "3306:3306"
