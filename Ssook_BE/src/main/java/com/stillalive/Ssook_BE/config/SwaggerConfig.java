@@ -17,9 +17,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
         info = @Info(
-                title = "Ssook API",
+                title = "Ssook_BE API",
                 version = "v1",
-                description = "Ssook Application API",
+                description = "Ssook_BE Application API",
                 contact = @Contact(name = "steelalive", email = "your.email@example.com")
         ),
         servers = @Server(
@@ -58,9 +58,9 @@ public class SwaggerConfig {
                                 .scheme(BEARER_TOKEN_PREFIX)
                                 .bearerFormat("JWT")))
                 .info(new io.swagger.v3.oas.models.info.Info()
-                        .title("Ssook API")
+                        .title("Ssook_BE API")
                         .version("1.0")
-                        .description("API documentation for Ssook application")
+                        .description("API documentation for Ssook_BE application")
                         .contact(new io.swagger.v3.oas.models.info.Contact()
                                 .name("Your Name")
                                 .email("your.email@example.com"))
