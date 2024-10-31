@@ -13,6 +13,10 @@ spring:
             charset: UTF-8
             enabled: true
             force: true
+#    h2:
+#        console:
+#            enabled: true  # H2 Console을 사용할지 여부 (H2 Console은 H2 Database를 UI로 제공해주는 기능)
+#            path: /h2-console  # H2 Console의 Path
 
     datasource:
         url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?useUnicode=true&characterEncoding=utf8&characterSetResults=utf8&serverTimezone=Asia/Seoul
@@ -51,8 +55,8 @@ spring:
     #                    max-idle: 15     # ?? ?? ??? ?
     #                    max-wait: 1000   # ???? ???? ?? ???? ?? ?? (???)
 
-#    jwt:
-#        secret: ${JWT_SECRET}  # ?? ??? ??
+    jwt:
+        secret: ${JWT_SECRET}  # ?? ??? ??
 
 # Swagger Configuration
 springdoc:
