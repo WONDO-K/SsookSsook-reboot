@@ -45,8 +45,10 @@ public enum ErrorCode {
     INSUFFICIENT_BALANCE(HttpStatus.BAD_REQUEST, "잔액이 부족합니다."),
 
     // 결제 관련 에러 코드
-    PAYMENT_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "결제 처리 중 문제가 발생했습니다.");
+    PAYMENT_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "결제 처리 중 문제가 발생했습니다."),
 
+    // 메뉴 관련 에러 코드
+    MENU_NOT_FOUND(HttpStatus.NOT_FOUND, "메뉴를 찾을 수 없습니다.");
 
     private final HttpStatus httpstatus;
     private final String message;

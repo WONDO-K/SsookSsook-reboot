@@ -49,4 +49,13 @@ public class JWTUtil {
                 .compact();
     }
 
+    // 카드 번호와 CVC 코드를 토큰화
+    public String tokenizationCard(String cardNumber, String cvcCode) {
+        return Jwts.builder()
+                .claim("cardNumber", cardNumber)
+                .claim("cvcCode", cvcCode)
+                .signWith(secretKey)
+                .compact();
+    }
+
 }

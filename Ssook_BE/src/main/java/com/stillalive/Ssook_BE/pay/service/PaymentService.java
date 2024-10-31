@@ -9,10 +9,10 @@ public interface PaymentService {
 
     void processPayment(PaymentReqDto paymentReqDto);
 
-    MyCardResDto getMyCard(Authentication authentication);
+    MyCardResDto getMyCard(int childId);
 
-    void registerCard(RegisterCardReqDto dto, Long childId);
+    void registerCard(RegisterCardReqDto dto, int childId);
 
-    int getPointBalance(Long childId);
+    int getPointBalance(int childId);
 
 }

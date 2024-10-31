@@ -33,6 +33,13 @@ public class PayDetail {
     @ColumnDefault("1")
     private Integer quantity;
 
+    // 필요한 3개의 필드만 받는 생성자 추가
+    public PayDetail(ChildHistory childHistory, Menu menu, Integer quantity) {
+        this.childHistory = childHistory;
+        this.menu = menu;
+        this.quantity = quantity;
+    }
+
 }
 
 

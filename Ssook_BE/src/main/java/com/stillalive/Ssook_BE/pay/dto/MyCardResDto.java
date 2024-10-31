@@ -1,7 +1,7 @@
 package com.stillalive.Ssook_BE.pay.dto;
 
-import com.example.demo.entity.Balance;
-import com.example.demo.entity.Card;
+import com.stillalive.Ssook_BE.domain.Balance;
+import com.stillalive.Ssook_BE.domain.Card;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,9 +13,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class MyCardResDto {
 
-        private Long childId;
+        private int childId;
 
-        private Long cardId;
+        private int cardId;
 
         private int balance;
 
@@ -25,10 +25,11 @@ public class MyCardResDto {
 
         private boolean isActive;
 
-        public static MyCardResDto toDto(Long childId, Card card, Balance balance) {
+        // TODO: child -> childId, cardId -> id 통일화 여부 물어보기
+        public static MyCardResDto toDto(int childId, Card card, Balance balance) {
                 return MyCardResDto.builder()
                         .childId(childId)
-                        .cardId(card.getCardId())
+                        .cardId(card.getId())
                         .balance(balance.getCurrentBalance())
                         .cardToken(card.getCardToken())
                         .expirationDate(card.getExpirationDate().toString())
