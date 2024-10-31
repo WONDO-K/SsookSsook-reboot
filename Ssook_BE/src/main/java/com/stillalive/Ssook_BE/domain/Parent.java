@@ -2,10 +2,9 @@ package com.stillalive.Ssook_BE.domain;
 
 import com.stillalive.Ssook_BE.domain.base.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,9 +12,8 @@ import java.util.List;
 @Entity
 @Getter
 @Table(name = "parent")
-@Builder
+@SuperBuilder
 @NoArgsConstructor
-@AllArgsConstructor
 public class Parent extends User {
 
     @Id
