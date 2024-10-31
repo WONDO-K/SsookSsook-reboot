@@ -35,7 +35,7 @@ public class ParentService {
         String password = parentSignupRequestDto.getPassword();
 
         // 아이디 중복 체크
-        if (parentRepository.existsByLoginId(loginId)) {
+        if (existsByLoginId(loginId)) {
             throw new SsookException(ErrorCode.DUPLICATE_LOGIN_ID);
         }
 
@@ -52,6 +52,16 @@ public class ParentService {
                 .loginId(loginId)
                 .password(bCryptPasswordEncoder.encode(password))
                 .build());
+    }
+
+    // 아이디 중복 체크
+    public boolean existsByLoginId(String loginId) {
+        boolean result = parentRepository.existsByLoginId(loginId);
+        if (result) {
+            // 이미 존재하는 아이디 예외발생
+            throw new SsookException(ErrorCode.DUPLICATE_LOGIN_ID);
+        }
+        return result;
     }
 
 }

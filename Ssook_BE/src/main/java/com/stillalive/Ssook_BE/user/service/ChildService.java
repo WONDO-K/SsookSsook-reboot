@@ -35,7 +35,7 @@ public class ChildService {
         Integer schoolId = childSignupRequestDto.getSchoolId();
 
         // 아이디 중복 체크
-        if (childRepository.existsByLoginId(loginId)) {
+        if (existsByLoginId(loginId)) {
             throw new SsookException(ErrorCode.DUPLICATE_LOGIN_ID);
         }
 
@@ -61,4 +61,15 @@ public class ChildService {
 
 
     }
+
+    public boolean existsByLoginId(String loginId) {
+        boolean result = childRepository.existsByLoginId(loginId);
+        if (result) {
+            // 이미 존재하는 로그인 아이디
+            throw new SsookException(ErrorCode.DUPLICATE_LOGIN_ID);
+        }
+        return result;
+    }
+
+
 }

@@ -62,7 +62,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // CSRF 비활성화
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 관리 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/parent/login", "/api/v1/child/login", "/api/v1/parent/join", "/api/v1/child/join").permitAll()
+                        .requestMatchers("/api/v1/parent/login", "/api/v1/child/login", "/api/v1/parent/join", "/api/v1/child/join", "/api/v1/user/*").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
 //                .addFilterBefore(new JWTFilter(jwtUtil, customUserDetailsService, refreshService), LoginFilter.class)
