@@ -3,6 +3,7 @@ package com.stillalive.Ssook_BE.domain;
 import com.stillalive.Ssook_BE.enums.PayType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -17,6 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "child_pay_history")
+@Builder
 public class ChildHistory {
 
     @Id
