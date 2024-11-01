@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Builder
 public class FamilyReqResDto {
 
+    private Integer familyRelationId;
     private String parentName;
     private String parentTel;
     private LocalDateTime requestedAt;

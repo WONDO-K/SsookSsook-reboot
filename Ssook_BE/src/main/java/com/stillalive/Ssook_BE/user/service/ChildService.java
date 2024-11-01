@@ -82,6 +82,7 @@ public class ChildService {
         List<FamilyReqResDto> list = familyRelationRepository.findByChild_ChildIdAndStatus(childId, Progress.PENDING)
                 .stream()
                 .map(familyRelation -> FamilyReqResDto.builder()
+                        .familyRelationId(familyRelation.getId())
                         .parentName(familyRelation.getParent().getName())
                         .parentTel(familyRelation.getParent().getTel())
                         .requestedAt(familyRelation.getCreatedAt())
