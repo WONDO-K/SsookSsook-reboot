@@ -2,10 +2,7 @@ package com.stillalive.Ssook_BE.user.controller;
 
 import com.stillalive.Ssook_BE.common.ApiResponse;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
-import com.stillalive.Ssook_BE.user.dto.AddChildReqDto;
-import com.stillalive.Ssook_BE.user.dto.AddChildReqListResDto;
-import com.stillalive.Ssook_BE.user.dto.ParentLoginReqDto;
-import com.stillalive.Ssook_BE.user.dto.ParentSignupReqDto;
+import com.stillalive.Ssook_BE.user.dto.*;
 import com.stillalive.Ssook_BE.user.service.ParentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -105,5 +102,24 @@ public class ParentController {
                 )
         );
     }
+
+    @Operation(summary = "자녀 목록 조회", description = "자녀 목록을 조회합니다.")
+    @GetMapping("/child")
+    public ResponseEntity<ApiResponse<ChildListResDto>> findChildList(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        Integer parentId = customUserDetails.getParentId();
+
+        ChildListResDto childListResDto = parentService.findChildList(parentId);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "자녀 목록을 조회했습니다.",
+                        childListResDto
+                )
+        );
+    }
+
 
 }
