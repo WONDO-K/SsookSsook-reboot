@@ -8,7 +8,7 @@ import java.util.Date;
 
 @Getter
 @Builder
-public class ParentSignupRequestDto {
+public class ParentSignupReqDto {
 
     private String name;
     private String tel;

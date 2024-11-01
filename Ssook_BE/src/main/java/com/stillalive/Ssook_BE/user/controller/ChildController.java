@@ -1,12 +1,14 @@
 package com.stillalive.Ssook_BE.user.controller;
 
+import com.stillalive.Ssook_BE.common.ApiResponse;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
-import com.stillalive.Ssook_BE.user.dto.ChildLoginRequestDto;
-import com.stillalive.Ssook_BE.user.dto.ChildSignupRequestDto;
+import com.stillalive.Ssook_BE.user.dto.ChildLoginReqDto;
+import com.stillalive.Ssook_BE.user.dto.ChildSignupReqDto;
 import com.stillalive.Ssook_BE.user.service.ChildService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,23 +22,47 @@ public class ChildController {
 
     @Operation(summary = "청소년 회원가입", description = "청소년 회원가입을 진행합니다.")
     @PostMapping("/join")
-    public void join(@RequestBody ChildSignupRequestDto childSignupRequestDto) {
+    public ResponseEntity<ApiResponse<Void>> join(@RequestBody ChildSignupReqDto childSignupReqDto) {
 
-        childService.join(childSignupRequestDto);
+        childService.join(childSignupReqDto);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "청소년 회원가입이 완료되었습니다.",
+                        null
+                )
+        );
     }
 
     // 로그인, 로그아웃은 필터에서 구현하고 스웨거 문서에만 표시하기위해 작성---
     @Operation(summary = "청소년 로그인", description = "청소년 로그인을 진행합니다.")
     @PostMapping("/login")
-    public String login(@RequestBody ChildLoginRequestDto childLoginRequestDto) {
-        return "child login";
+    public ResponseEntity<ApiResponse<Void>> login(@RequestBody ChildLoginReqDto childLoginReqDto) {
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "청소년 로그인이 완료되었습니다.",
+                        null
+                )
+        );
     }
 
     @Operation(summary = "청소년 childId 찾기", description = "childId를 찾습니다.")
     @GetMapping("/childId")
-    public Integer findChildId(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    public ResponseEntity<ApiResponse<Integer>> findChildId(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         System.out.println("customUserDetails.getChildId() = " + customUserDetails.getChildId());
-        return customUserDetails.getChildId(); // childId 반환
-    }
 
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "childId를 찾았습니다.",
+                        customUserDetails.getChildId()
+                )
+        );
+    }
 }

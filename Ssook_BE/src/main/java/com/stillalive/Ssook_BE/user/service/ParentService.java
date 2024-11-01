@@ -1,13 +1,10 @@
 package com.stillalive.Ssook_BE.user.service;
 
-import com.stillalive.Ssook_BE.domain.Child;
 import com.stillalive.Ssook_BE.domain.Parent;
-import com.stillalive.Ssook_BE.domain.School;
 import com.stillalive.Ssook_BE.enums.Gender;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
-import com.stillalive.Ssook_BE.user.dto.ChildSignupRequestDto;
-import com.stillalive.Ssook_BE.user.dto.ParentSignupRequestDto;
+import com.stillalive.Ssook_BE.user.dto.ParentSignupReqDto;
 import com.stillalive.Ssook_BE.user.repository.ParentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,14 +21,14 @@ public class ParentService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Transactional
-    public void join(ParentSignupRequestDto parentSignupRequestDto) {
+    public void join(ParentSignupReqDto parentSignupReqDto) {
 
-        String name = parentSignupRequestDto.getName();
-        String tel = parentSignupRequestDto.getTel();
-        Date bday = parentSignupRequestDto.getBday();
-        Gender gender = parentSignupRequestDto.getGender();
-        String loginId = parentSignupRequestDto.getLoginId();
-        String password = parentSignupRequestDto.getPassword();
+        String name = parentSignupReqDto.getName();
+        String tel = parentSignupReqDto.getTel();
+        Date bday = parentSignupReqDto.getBday();
+        Gender gender = parentSignupReqDto.getGender();
+        String loginId = parentSignupReqDto.getLoginId();
+        String password = parentSignupReqDto.getPassword();
 
         // 아이디 중복 체크
         if (existsByLoginId(loginId)) {

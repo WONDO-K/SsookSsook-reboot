@@ -5,7 +5,7 @@ import com.stillalive.Ssook_BE.domain.School;
 import com.stillalive.Ssook_BE.enums.Gender;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
-import com.stillalive.Ssook_BE.user.dto.ChildSignupRequestDto;
+import com.stillalive.Ssook_BE.user.dto.ChildSignupReqDto;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,15 +24,15 @@ public class ChildService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Transactional
-    public void join(ChildSignupRequestDto childSignupRequestDto) {
+    public void join(ChildSignupReqDto childSignupReqDto) {
 
-        String name = childSignupRequestDto.getName();
-        String tel = childSignupRequestDto.getTel();
-        Date bday = childSignupRequestDto.getBday();
-        Gender gender = childSignupRequestDto.getGender();
-        String loginId = childSignupRequestDto.getLoginId();
-        String password = childSignupRequestDto.getPassword();
-        Integer schoolId = childSignupRequestDto.getSchoolId();
+        String name = childSignupReqDto.getName();
+        String tel = childSignupReqDto.getTel();
+        Date bday = childSignupReqDto.getBday();
+        Gender gender = childSignupReqDto.getGender();
+        String loginId = childSignupReqDto.getLoginId();
+        String password = childSignupReqDto.getPassword();
+        Integer schoolId = childSignupReqDto.getSchoolId();
 
         // 아이디 중복 체크
         if (existsByLoginId(loginId)) {
