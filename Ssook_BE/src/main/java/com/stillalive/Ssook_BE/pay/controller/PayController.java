@@ -1,16 +1,21 @@
-package com.stillalive.Ssook_BE.pay;
+package com.stillalive.Ssook_BE.pay.controller;
 
 import com.stillalive.Ssook_BE.common.ApiResponse;
+import com.stillalive.Ssook_BE.domain.ChildHistory;
+import com.stillalive.Ssook_BE.pay.dto.ChildHistoryResDto;
 import com.stillalive.Ssook_BE.pay.dto.MyCardResDto;
 import com.stillalive.Ssook_BE.pay.dto.PaymentReqDto;
 import com.stillalive.Ssook_BE.pay.dto.RegisterCardReqDto;
 import com.stillalive.Ssook_BE.pay.service.PaymentService;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
+import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/pay")
@@ -18,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class PayController {
 
     private final PaymentService paymentService;
+    private final ChildRepository childRepository;
 
     /**
      * 카드 등록 API
@@ -71,6 +77,41 @@ public class PayController {
     @GetMapping("/my-card")
     public ResponseEntity<MyCardResDto> getMyCard(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(paymentService.getMyCard(userDetails.getChildId()));
+    }
+    
+    /**
+     * 거래내역 리스트 조회
+     * */
+    @GetMapping("/list")
+    public ResponseEntity<ApiResponse<?>> getPaymentList(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(required = false) Integer months) {
+
+        int childId = userDetails.getChildId();
+        List<ChildHistoryResDto> paymentList = paymentService.getPaymentList(childId, months);
+
+        return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "거래내역 조회 성공", paymentList));
+    }
+
+    /**
+     * 거래내역 상세 조회
+     * */
+    @GetMapping("/detail/{historyId}")
+    public ResponseEntity<ApiResponse<?>>  getPaymentDetail(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable int historyId) {
+
+        String loginId = userDetails.getUsername();
+        int userId ;
+        boolean isChild = childRepository.existsByLoginId(loginId);
+        if (isChild){
+            userId = userDetails.getChildId();
+        } else {
+            userId = userDetails.getParentId();
+        }
+        ChildHistory paymentDetail = paymentService.getPaymentDetail(userId, historyId);
+
+        return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "거래내역 상세 조회 성공", paymentDetail));
     }
 
 }

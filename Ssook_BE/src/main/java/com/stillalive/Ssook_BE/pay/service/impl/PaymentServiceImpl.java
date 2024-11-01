@@ -6,6 +6,7 @@ import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.menu.repository.MenuRepository;
 import com.stillalive.Ssook_BE.menu.service.MenuNutService;
+import com.stillalive.Ssook_BE.pay.dto.ChildHistoryResDto;
 import com.stillalive.Ssook_BE.pay.dto.MyCardResDto;
 import com.stillalive.Ssook_BE.pay.dto.PaymentReqDto;
 import com.stillalive.Ssook_BE.pay.dto.RegisterCardReqDto;
@@ -14,12 +15,14 @@ import com.stillalive.Ssook_BE.pay.repository.CardRepository;
 import com.stillalive.Ssook_BE.pay.repository.HistoryRepository;
 import com.stillalive.Ssook_BE.pay.service.PaymentService;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
+import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
 import com.stillalive.Ssook_BE.util.JWTUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +34,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final ChildRepository childRepository;
     private final BalanceRepository balanceRepository;
     private final HistoryRepository historyRepository;
+    private final FamilyRelationRepository familyRelationRepository;
     private final MenuRepository menuRepository;
     private final MenuNutService menuNutService;
     private final JWTUtil jwtUtil;
@@ -161,6 +165,43 @@ public class PaymentServiceImpl implements PaymentService {
         Child child = childRepository.findById(childId)
                 .orElseThrow(() -> new SsookException(ErrorCode.USER_NOT_FOUND));
         return child.getPoint();
+    }
+
+    @Override
+    public List<ChildHistoryResDto> getPaymentList(int childId, Integer months) {
+
+        if (months == null || months <= 0){
+            months = 1;
+        }
+        LocalDateTime endDate = LocalDateTime.now();
+        LocalDateTime startDate = endDate.minusMonths(months).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+
+        List<ChildHistory> histories = historyRepository.findByChildIdAndDateRange(childId, startDate, endDate);
+
+        return histories.stream().map(ChildHistoryResDto::toDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public ChildHistory getPaymentDetail(int userId, int historyId) {
+        // 거래 내역 조회
+        ChildHistory childHistory = historyRepository.findById(historyId)
+                .orElseThrow(() -> new SsookException(ErrorCode.HISTORY_NOT_FOUND));
+
+        int historyChildId = childHistory.getCard().getChild().getChildId();
+
+        // 자식 본인 여부 확인
+        if (historyChildId == userId) {
+            return childHistory;
+        }
+
+        // 부모가 자식의 거래 내역에 접근하려는 경우, 부모-자식 관계 확인
+        boolean isRelated = familyRelationRepository.findByParentIdAndChildId(userId, historyChildId).isPresent();
+        if (isRelated) {
+            return childHistory;
+        }
+
+        // 관계가 없으면 접근 불가 예외 발생
+        throw new SsookException(ErrorCode.ACCESS_DENIED);
     }
 
     // createHistory 메서드 수정
