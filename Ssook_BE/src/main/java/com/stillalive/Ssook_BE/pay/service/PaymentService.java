@@ -22,4 +22,6 @@ public interface PaymentService {
     List<ChildHistoryResDto> getPaymentList(int childId, Integer months);
 
     ChildHistory getPaymentDetail(int userId, int historyId);
+
+    void chargePoints(int parentId, int amount); // 포인트 충전
 }

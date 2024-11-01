@@ -16,6 +16,7 @@ import com.stillalive.Ssook_BE.pay.repository.HistoryRepository;
 import com.stillalive.Ssook_BE.pay.service.PaymentService;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
+import com.stillalive.Ssook_BE.user.repository.ParentRepository;
 import com.stillalive.Ssook_BE.util.JWTUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final HistoryRepository historyRepository;
     private final FamilyRelationRepository familyRelationRepository;
     private final MenuRepository menuRepository;
+    private final ParentRepository parentRepository;
 //    private final MenuNutService menuNutService;
     private final JWTUtil jwtUtil;
 
@@ -166,6 +168,20 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new SsookException(ErrorCode.USER_NOT_FOUND));
         return child.getPoint();
     }
+
+
+    @Override
+    @Transactional
+    public void chargePoints(int parentId, int amount) {
+        Parent parent = parentRepository.findById(parentId)
+                .orElseThrow(() -> new SsookException(ErrorCode.USER_NOT_FOUND));
+
+        int newPointBalance = parent.getPoint() + amount;
+        parent.setPoint(newPointBalance);
+        parentRepository.save(parent);
+    }
+
+
 
     @Override
     public List<ChildHistoryResDto> getPaymentList(int childId, Integer months) {
