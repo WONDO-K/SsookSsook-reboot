@@ -32,8 +32,13 @@ public enum ErrorCode {
     WRONG_PASSWORD(HttpStatus.UNAUTHORIZED, "비밀번호가 틀렸습니다."),
 
     // Child
-    NOT_FOUND_SCHOOL(HttpStatus.NOT_FOUND, "해당 학교를 찾을 수 없습니다.");
+    NOT_FOUND_SCHOOL(HttpStatus.NOT_FOUND, "해당 학교를 찾을 수 없습니다."),
+    NOT_FOUND_CHILD(HttpStatus.NOT_FOUND, "해당 아이를 찾을 수 없습니다."),
 
+    // Parent
+    NOT_FOUND_PARENT(HttpStatus.NOT_FOUND, "해당 부모를 찾을 수 없습니다."),
+
+    ;
     private final HttpStatus httpstatus;
     private final String message;
 }

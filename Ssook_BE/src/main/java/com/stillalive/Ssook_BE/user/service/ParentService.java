@@ -1,10 +1,16 @@
 package com.stillalive.Ssook_BE.user.service;
 
+import com.stillalive.Ssook_BE.domain.Child;
+import com.stillalive.Ssook_BE.domain.FamilyRelation;
 import com.stillalive.Ssook_BE.domain.Parent;
 import com.stillalive.Ssook_BE.enums.Gender;
+import com.stillalive.Ssook_BE.enums.Progress;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
+import com.stillalive.Ssook_BE.user.dto.AddChildReqDto;
 import com.stillalive.Ssook_BE.user.dto.ParentSignupReqDto;
+import com.stillalive.Ssook_BE.user.repository.ChildRepository;
+import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
 import com.stillalive.Ssook_BE.user.repository.ParentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,6 +24,9 @@ import java.util.Date;
 public class ParentService {
 
     private final ParentRepository parentRepository;
+    private final ChildRepository childRepository;
+    private final FamilyRelationRepository familyRelationRepository;
+
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Transactional
@@ -58,6 +67,26 @@ public class ParentService {
             throw new SsookException(ErrorCode.DUPLICATE_LOGIN_ID);
         }
         return result;
+    }
+
+    @Transactional
+    public void addChild(Integer parentId, AddChildReqDto addChildReqDto) {
+
+        // 해당 부모 회원 조회
+        Parent parent = parentRepository.findById(parentId)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_PARENT));
+
+        // 해당 전화번호를 가진 청소년 회원 조회
+        Child child = childRepository.findByTel(addChildReqDto.getTel())
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_CHILD));
+
+        // 가족의 연 관계 설정 (신청)
+        familyRelationRepository.save(FamilyRelation.builder()
+                .parent(parent)
+                .child(child)
+                .status(Progress.PENDING)
+                .build());
+
     }
 
 }

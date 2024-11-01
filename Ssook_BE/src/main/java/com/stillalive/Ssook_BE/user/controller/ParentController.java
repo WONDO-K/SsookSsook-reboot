@@ -2,11 +2,13 @@ package com.stillalive.Ssook_BE.user.controller;
 
 import com.stillalive.Ssook_BE.common.ApiResponse;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
+import com.stillalive.Ssook_BE.user.dto.AddChildReqDto;
 import com.stillalive.Ssook_BE.user.dto.ParentLoginReqDto;
 import com.stillalive.Ssook_BE.user.dto.ParentSignupReqDto;
 import com.stillalive.Ssook_BE.user.service.ParentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -64,6 +66,24 @@ public class ParentController {
                 )
         );
 
+    }
+
+    @Operation(summary = "자녀 추가", description = "자녀를 추가합니다.")
+    @PostMapping("/child")
+    public ResponseEntity<ApiResponse<Void>> addChild(@AuthenticationPrincipal CustomUserDetails customUserDetails, @Valid @RequestBody AddChildReqDto addChildReqDto) {
+
+        Integer parentId = customUserDetails.getParentId();
+
+        parentService.addChild(parentId, addChildReqDto);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "자녀 추가가 완료되었습니다.",
+                        null
+                )
+        );
     }
 
 }

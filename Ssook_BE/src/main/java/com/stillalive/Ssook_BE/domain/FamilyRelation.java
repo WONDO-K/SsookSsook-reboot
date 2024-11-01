@@ -1,5 +1,7 @@
 package com.stillalive.Ssook_BE.domain;
 
+import com.stillalive.Ssook_BE.domain.base.BaseTimeEntity;
+import com.stillalive.Ssook_BE.enums.Progress;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +19,7 @@ import java.time.LocalDateTime;
 @Builder
 @Entity
 @Table(name = "family_relation")
-public class FamilyRelation {
+public class FamilyRelation extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,7 +36,8 @@ public class FamilyRelation {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Child child;
 
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime createdAt;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private Progress status = Progress.PENDING;
+
 }
