@@ -1,10 +1,13 @@
 package com.stillalive.Ssook_BE.user.controller;
 
 import com.stillalive.Ssook_BE.common.ApiResponse;
+import com.stillalive.Ssook_BE.domain.FamilyRelation;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
 import com.stillalive.Ssook_BE.user.dto.ChildLoginReqDto;
 import com.stillalive.Ssook_BE.user.dto.ChildSignupReqDto;
+import com.stillalive.Ssook_BE.user.dto.FamilyReqAcceptReqDto;
 import com.stillalive.Ssook_BE.user.dto.FamilyReqListResDto;
+import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
 import com.stillalive.Ssook_BE.user.service.ChildService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class ChildController {
 
     private final ChildService childService;
+    private final FamilyRelationRepository familyRelationRepository;
 
     @Operation(summary = "청소년 회원가입", description = "청소년 회원가입을 진행합니다.")
     @PostMapping("/join")
@@ -86,5 +90,22 @@ public class ChildController {
         );
     }
 
-}
+    @Operation(summary = "자녀 추가 수락", description = "자녀 추가 요청을 수락합니다.")
+    @PostMapping("/parent")
+    public ResponseEntity<ApiResponse<Void>> acceptParent(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody FamilyReqAcceptReqDto familyReqAcceptReqDto) {
 
+        Integer childId = customUserDetails.getChildId();
+
+        childService.acceptParent(childId, familyReqAcceptReqDto.getFamilyRelationId());
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "자녀 추가 요청을 수락했습니다.",
+                        null
+                )
+        );
+    }
+
+}

@@ -1,6 +1,7 @@
 package com.stillalive.Ssook_BE.user.service;
 
 import com.stillalive.Ssook_BE.domain.Child;
+import com.stillalive.Ssook_BE.domain.FamilyRelation;
 import com.stillalive.Ssook_BE.domain.School;
 import com.stillalive.Ssook_BE.enums.Gender;
 import com.stillalive.Ssook_BE.enums.Progress;
@@ -95,4 +96,20 @@ public class ChildService {
 
     }
 
+    // 가족 신청 수락
+    @Transactional
+    public void acceptParent(Integer childId, Integer familyRelationId) {
+
+        FamilyRelation familyRelation = familyRelationRepository.findById(familyRelationId).orElseThrow(() -> {
+            throw new SsookException(ErrorCode.NOT_FOUND_FAMILY_RELATION);
+        });
+
+        if (!familyRelation.getChild().getChildId().equals(childId)) {
+            throw new SsookException(ErrorCode.NOT_MY_FAMILY_RELATION);
+        }
+
+        // 가족 신청 상태 변경
+        familyRelation.accept();
+
+    }
 }

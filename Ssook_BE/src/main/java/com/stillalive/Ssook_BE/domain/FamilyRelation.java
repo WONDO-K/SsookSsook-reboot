@@ -40,4 +40,8 @@ public class FamilyRelation extends BaseTimeEntity {
     @Column(name = "status", nullable = false)
     private Progress status = Progress.PENDING;
 
+    public void accept() {
+        this.status = Progress.YES;
+    }
+
 }
