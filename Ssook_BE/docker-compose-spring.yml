@@ -1,0 +1,15 @@
+services:
+  spring_app:
+    image: kimdonggeon/stillalive_be:latest
+    container_name: spring_app
+    expose:
+      - "8080" 
+    env_file:
+      - .env  # .env 파일을 참조하여 환경 변수를 로드합니다.
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    external: true
+
