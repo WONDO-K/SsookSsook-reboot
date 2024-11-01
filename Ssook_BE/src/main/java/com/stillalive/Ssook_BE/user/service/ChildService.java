@@ -7,9 +7,7 @@ import com.stillalive.Ssook_BE.enums.Gender;
 import com.stillalive.Ssook_BE.enums.Progress;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
-import com.stillalive.Ssook_BE.user.dto.ChildSignupReqDto;
-import com.stillalive.Ssook_BE.user.dto.FamilyReqListResDto;
-import com.stillalive.Ssook_BE.user.dto.FamilyReqResDto;
+import com.stillalive.Ssook_BE.user.dto.*;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
 import lombok.RequiredArgsConstructor;
@@ -111,5 +109,24 @@ public class ChildService {
         // 가족 신청 상태 변경
         familyRelation.accept();
 
+    }
+
+    // 부모 목록 조회
+    public ParentListResDto getParentList(Integer childId) {
+        List<ParentResDto> list = familyRelationRepository.findAllByChild_ChildIdAndStatus(childId, Progress.YES)
+                .stream()
+                .map(familyRelation -> ParentResDto.builder()
+                        .parentId(familyRelation.getParent().getParentId())
+                        .name(familyRelation.getParent().getName())
+                        .tel(familyRelation.getParent().getTel())
+                        .bday(familyRelation.getParent().getBday())
+                        .gender(familyRelation.getParent().getGender())
+                        .build())
+                .toList();
+
+        return ParentListResDto.builder()
+                .parentList(list)
+                .totalItems(list.size())
+                .build();
     }
 }

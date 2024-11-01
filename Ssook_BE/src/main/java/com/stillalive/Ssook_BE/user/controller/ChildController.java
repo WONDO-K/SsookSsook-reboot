@@ -3,10 +3,7 @@ package com.stillalive.Ssook_BE.user.controller;
 import com.stillalive.Ssook_BE.common.ApiResponse;
 import com.stillalive.Ssook_BE.domain.FamilyRelation;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
-import com.stillalive.Ssook_BE.user.dto.ChildLoginReqDto;
-import com.stillalive.Ssook_BE.user.dto.ChildSignupReqDto;
-import com.stillalive.Ssook_BE.user.dto.FamilyReqAcceptReqDto;
-import com.stillalive.Ssook_BE.user.dto.FamilyReqListResDto;
+import com.stillalive.Ssook_BE.user.dto.*;
 import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
 import com.stillalive.Ssook_BE.user.service.ChildService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -104,6 +101,25 @@ public class ChildController {
                         "OK",
                         "자녀 추가 요청을 수락했습니다.",
                         null
+                )
+        );
+    }
+
+    @Operation(summary = "부모 목록 조회", description = "부모 목록을 조회합니다.")
+    @GetMapping("/parent")
+    public ResponseEntity<ApiResponse<ParentListResDto>> findParentList(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        Integer childId = customUserDetails.getChildId();
+
+        // 서비스에서 부모 목록 조회
+        ParentListResDto parentListResDto = childService.getParentList(childId);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "부모 목록을 조회했습니다.",
+                        parentListResDto
                 )
         );
     }

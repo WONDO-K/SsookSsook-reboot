@@ -23,4 +23,6 @@ public interface FamilyRelationRepository extends JpaRepository<FamilyRelation, 
     List<FamilyRelation> findByParent_ParentIdAndStatus(Integer parentId, Progress progress);
 
     List<FamilyRelation> findAllByParent_ParentIdAndStatus(Integer parentId, Progress progress);
+
+    List<FamilyRelation> findAllByChild_ChildIdAndStatus(Integer childId, Progress progress);
 }
