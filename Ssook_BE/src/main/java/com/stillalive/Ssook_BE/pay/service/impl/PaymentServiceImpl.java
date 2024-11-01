@@ -36,7 +36,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final HistoryRepository historyRepository;
     private final FamilyRelationRepository familyRelationRepository;
     private final MenuRepository menuRepository;
-    private final MenuNutService menuNutService;
+//    private final MenuNutService menuNutService;
     private final JWTUtil jwtUtil;
 
     @Transactional // balance와 user의 데이터를 변경하는 트랜잭션 처리
@@ -195,7 +195,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         // 부모가 자식의 거래 내역에 접근하려는 경우, 부모-자식 관계 확인
-        boolean isRelated = familyRelationRepository.findByParentIdAndChildId(userId, historyChildId).isPresent();
+        boolean isRelated = familyRelationRepository.findByParent_ParentIdAndChild_ChildId(userId, historyChildId).isPresent();
         if (isRelated) {
             return childHistory;
         }
@@ -218,7 +218,7 @@ public class PaymentServiceImpl implements PaymentService {
                     .orElseThrow(() -> new SsookException(ErrorCode.MENU_NOT_FOUND));
 
             // MenuNut 조회 또는 생성
-            menuNutService.createMenuNutIfNotExists(menu.getName());
+//            menuNutService.createMenuNutIfNotExists(menu.getName());
 
             return new PayDetail(childHistory, menu, detailDto.getQuantity());
         }).collect(Collectors.toList());
