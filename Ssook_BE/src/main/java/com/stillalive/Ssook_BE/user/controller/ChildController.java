@@ -4,6 +4,7 @@ import com.stillalive.Ssook_BE.common.ApiResponse;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
 import com.stillalive.Ssook_BE.user.dto.ChildLoginReqDto;
 import com.stillalive.Ssook_BE.user.dto.ChildSignupReqDto;
+import com.stillalive.Ssook_BE.user.dto.FamilyReqListResDto;
 import com.stillalive.Ssook_BE.user.service.ChildService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -65,4 +66,25 @@ public class ChildController {
                 )
         );
     }
+
+    @Operation(summary = "받은 가족 신청 목록 조회", description = "받은 가족 신청 목록을 조회합니다.")
+    @GetMapping("/family")
+    public ResponseEntity<ApiResponse<FamilyReqListResDto>> findFamilyReqList(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        Integer childId = customUserDetails.getChildId();
+
+        // 서비스에서 가족 요청 목록 조회
+        FamilyReqListResDto familiyReqListResDto = childService.getFamilyReqList(childId);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "받은 가족 신청 목록을 조회했습니다.",
+                        familiyReqListResDto
+                )
+        );
+    }
+
 }
+

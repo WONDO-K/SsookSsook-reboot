@@ -3,16 +3,21 @@ package com.stillalive.Ssook_BE.user.service;
 import com.stillalive.Ssook_BE.domain.Child;
 import com.stillalive.Ssook_BE.domain.School;
 import com.stillalive.Ssook_BE.enums.Gender;
+import com.stillalive.Ssook_BE.enums.Progress;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.user.dto.ChildSignupReqDto;
+import com.stillalive.Ssook_BE.user.dto.FamilyReqListResDto;
+import com.stillalive.Ssook_BE.user.dto.FamilyReqResDto;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
+import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -20,6 +25,7 @@ import java.util.Optional;
 public class ChildService {
 
     private final ChildRepository childRepository;
+    private final FamilyRelationRepository familyRelationRepository;
     private final SchoolRepository schoolRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -71,5 +77,21 @@ public class ChildService {
         return result;
     }
 
+    // 가족 신청 목록 조회
+    public FamilyReqListResDto getFamilyReqList(Integer childId) {
+        List<FamilyReqResDto> list = familyRelationRepository.findByChild_ChildIdAndStatus(childId, Progress.PENDING)
+                .stream()
+                .map(familyRelation -> FamilyReqResDto.builder()
+                        .parentName(familyRelation.getParent().getName())
+                        .parentTel(familyRelation.getParent().getTel())
+                        .requestedAt(familyRelation.getCreatedAt())
+                        .build())
+                .toList();
+
+        return FamilyReqListResDto.builder()
+                .familyReqList(list)
+                .build();
+
+    }
 
 }
