@@ -50,4 +50,8 @@ public abstract class User extends BaseTimeEntity {
         }
     }
 
+    public void setPoint(int point) {
+        this.point = point;
+    }
+
 }

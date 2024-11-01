@@ -20,6 +20,7 @@ public class Menu {
     @Column(name = "menu_id", nullable = false)
     private Integer id;
 
+    // TODO: 메뉴에 식당 정보가 왜 있는 지 논의해볼 것
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "diner_id", nullable = false)
     private Diner diner;
