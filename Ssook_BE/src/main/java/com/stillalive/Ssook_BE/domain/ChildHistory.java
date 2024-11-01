@@ -3,6 +3,7 @@ package com.stillalive.Ssook_BE.domain;
 import com.stillalive.Ssook_BE.enums.PayType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -11,12 +12,14 @@ import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "child_pay_history")
+@Builder
 public class ChildHistory {
 
     @Id
@@ -42,8 +45,8 @@ public class ChildHistory {
     private Integer pointPrice;
 
     @CreatedDate
-    @Column(name = "created_at", updatable = false, nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp historyTime;
+    @Column(name = "created_at", updatable = false, nullable = false, columnDefinition = "LOCALDATETIME DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime historyTime;
 
     @OneToMany(mappedBy = "childHistory", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PayDetail> payDetails;
