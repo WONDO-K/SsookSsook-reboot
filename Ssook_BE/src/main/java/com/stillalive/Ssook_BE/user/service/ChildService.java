@@ -1,18 +1,24 @@
 package com.stillalive.Ssook_BE.user.service;
 
 import com.stillalive.Ssook_BE.domain.Child;
+import com.stillalive.Ssook_BE.domain.FamilyRelation;
 import com.stillalive.Ssook_BE.domain.School;
 import com.stillalive.Ssook_BE.enums.Gender;
+import com.stillalive.Ssook_BE.enums.Progress;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
-import com.stillalive.Ssook_BE.user.dto.ChildSignupRequestDto;
+import com.stillalive.Ssook_BE.user.dto.ChildSignupReqDto;
+import com.stillalive.Ssook_BE.user.dto.FamilyReqListResDto;
+import com.stillalive.Ssook_BE.user.dto.FamilyReqResDto;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
+import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -20,19 +26,20 @@ import java.util.Optional;
 public class ChildService {
 
     private final ChildRepository childRepository;
+    private final FamilyRelationRepository familyRelationRepository;
     private final SchoolRepository schoolRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Transactional
-    public void join(ChildSignupRequestDto childSignupRequestDto) {
+    public void join(ChildSignupReqDto childSignupReqDto) {
 
-        String name = childSignupRequestDto.getName();
-        String tel = childSignupRequestDto.getTel();
-        Date bday = childSignupRequestDto.getBday();
-        Gender gender = childSignupRequestDto.getGender();
-        String loginId = childSignupRequestDto.getLoginId();
-        String password = childSignupRequestDto.getPassword();
-        Integer schoolId = childSignupRequestDto.getSchoolId();
+        String name = childSignupReqDto.getName();
+        String tel = childSignupReqDto.getTel();
+        Date bday = childSignupReqDto.getBday();
+        Gender gender = childSignupReqDto.getGender();
+        String loginId = childSignupReqDto.getLoginId();
+        String password = childSignupReqDto.getPassword();
+        Integer schoolId = childSignupReqDto.getSchoolId();
 
         // 아이디 중복 체크
         if (existsByLoginId(loginId)) {
@@ -71,5 +78,38 @@ public class ChildService {
         return result;
     }
 
+    // 가족 신청 목록 조회
+    public FamilyReqListResDto getFamilyReqList(Integer childId) {
+        List<FamilyReqResDto> list = familyRelationRepository.findByChild_ChildIdAndStatus(childId, Progress.PENDING)
+                .stream()
+                .map(familyRelation -> FamilyReqResDto.builder()
+                        .familyRelationId(familyRelation.getId())
+                        .parentName(familyRelation.getParent().getName())
+                        .parentTel(familyRelation.getParent().getTel())
+                        .requestedAt(familyRelation.getCreatedAt())
+                        .build())
+                .toList();
 
+        return FamilyReqListResDto.builder()
+                .familyReqList(list)
+                .build();
+
+    }
+
+    // 가족 신청 수락
+    @Transactional
+    public void acceptParent(Integer childId, Integer familyRelationId) {
+
+        FamilyRelation familyRelation = familyRelationRepository.findById(familyRelationId).orElseThrow(() -> {
+            throw new SsookException(ErrorCode.NOT_FOUND_FAMILY_RELATION);
+        });
+
+        if (!familyRelation.getChild().getChildId().equals(childId)) {
+            throw new SsookException(ErrorCode.NOT_MY_FAMILY_RELATION);
+        }
+
+        // 가족 신청 상태 변경
+        familyRelation.accept();
+
+    }
 }

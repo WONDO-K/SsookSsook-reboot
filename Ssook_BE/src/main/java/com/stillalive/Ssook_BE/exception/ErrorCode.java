@@ -32,6 +32,7 @@ public enum ErrorCode {
 
     // Child
     NOT_FOUND_SCHOOL(HttpStatus.NOT_FOUND, "해당 학교를 찾을 수 없습니다."),
+    NOT_FOUND_CHILD(HttpStatus.NOT_FOUND, "해당 아이를 찾을 수 없습니다."),
 
     // 카드 관련 에러 코드
     CARD_NOT_FOUND(HttpStatus.NOT_FOUND, "카드를 찾을 수 없습니다."),
@@ -52,6 +53,15 @@ public enum ErrorCode {
     // 메뉴 관련 에러 코드
     MENU_NOT_FOUND(HttpStatus.NOT_FOUND, "메뉴를 찾을 수 없습니다.");
 
+    // Parent
+    NOT_FOUND_PARENT(HttpStatus.NOT_FOUND, "해당 부모를 찾을 수 없습니다."),
+
+    // FamilyRelation
+    NOT_FOUND_FAMILY_RELATION(HttpStatus.NOT_FOUND, "해당 가족 관계를 찾을 수 없습니다."),
+    NOT_MY_FAMILY_RELATION(HttpStatus.FORBIDDEN, "본인의 가족 관계가 아닙니다."),
+
+
+    ;
     private final HttpStatus httpstatus;
     private final String message;
 }

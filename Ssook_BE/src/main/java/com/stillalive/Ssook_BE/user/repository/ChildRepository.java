@@ -14,4 +14,6 @@ public interface ChildRepository extends JpaRepository<Child, Integer> {
     boolean existsByLoginId(String loginId);
 
     boolean existsByTel(String tel);
+
+    Optional<Child> findByTel(String tel);
 }
