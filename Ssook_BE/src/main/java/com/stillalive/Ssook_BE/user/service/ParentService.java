@@ -8,6 +8,8 @@ import com.stillalive.Ssook_BE.enums.Progress;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.user.dto.AddChildReqDto;
+import com.stillalive.Ssook_BE.user.dto.AddChildReqListResDto;
+import com.stillalive.Ssook_BE.user.dto.AddChildReqResDto;
 import com.stillalive.Ssook_BE.user.dto.ParentSignupReqDto;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -87,6 +90,23 @@ public class ParentService {
                 .status(Progress.PENDING)
                 .build());
 
+    }
+
+    // getReqChildList
+    public AddChildReqListResDto getReqChildList(Integer parentId) {
+        List<AddChildReqResDto> list = familyRelationRepository.findByParent_ParentIdAndStatus(parentId, Progress.PENDING)
+                .stream()
+                .map(familyRelation -> AddChildReqResDto.builder()
+                        .familyRelationId(familyRelation.getId())
+                        .childName(familyRelation.getChild().getName())
+                        .childTel(familyRelation.getChild().getTel())
+                        .requestedAt(familyRelation.getCreatedAt())
+                        .build())
+                .toList();
+
+        return AddChildReqListResDto.builder()
+                .addChildReqList(list)
+                .build();
     }
 
 }
