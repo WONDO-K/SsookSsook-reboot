@@ -5,16 +5,12 @@ import com.stillalive.Ssook_BE.domain.School;
 import com.stillalive.Ssook_BE.enums.Gender;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
-import com.stillalive.Ssook_BE.user.dto.ChildLoginRequestDto;
 import com.stillalive.Ssook_BE.user.dto.ChildSignupRequestDto;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
-import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Date;
 import java.util.Optional;
@@ -39,7 +35,7 @@ public class ChildService {
         Integer schoolId = childSignupRequestDto.getSchoolId();
 
         // 아이디 중복 체크
-        if (childRepository.existsByLoginId(loginId)) {
+        if (existsByLoginId(loginId)) {
             throw new SsookException(ErrorCode.DUPLICATE_LOGIN_ID);
         }
 
@@ -65,4 +61,15 @@ public class ChildService {
 
 
     }
+
+    public boolean existsByLoginId(String loginId) {
+        boolean result = childRepository.existsByLoginId(loginId);
+        if (result) {
+            // 이미 존재하는 로그인 아이디
+            throw new SsookException(ErrorCode.DUPLICATE_LOGIN_ID);
+        }
+        return result;
+    }
+
+
 }

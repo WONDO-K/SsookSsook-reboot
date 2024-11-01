@@ -29,7 +29,7 @@ public class ChildController {
     @Operation(summary = "청소년 로그인", description = "청소년 로그인을 진행합니다.")
     @PostMapping("/login")
     public String login(@RequestBody ChildLoginRequestDto childLoginRequestDto) {
-        return "login";
+        return "child login";
     }
 
     @Operation(summary = "청소년 childId 찾기", description = "childId를 찾습니다.")

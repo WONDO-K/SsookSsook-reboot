@@ -34,11 +34,18 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
 
-        // 청소년 로그인 요청 로그
-        log.info("Login request : POST /api/v1/child/login");
-
         String loginId = null;
         String password = null;
+        String path = request.getRequestURI();
+
+        // 요청 경로에 따라 로그 구분
+        if (path.equals("/api/v1/child/login")) {
+            log.info("Login request: POST /api/v1/child/login");
+        } else if (path.equals("/api/v1/parent/login")) {
+            log.info("Login request: POST /api/v1/parent/login");
+        } else {
+            throw new SsookException(ErrorCode.INVALID_LOGIN_REQUEST);
+        }
 
         try {
             // Content-Type을 확인하여 처리
@@ -89,16 +96,21 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        String loginId = customUserDetails.getUsername();
+        String username = customUserDetails.getUsername();
 
-        String access = jwtUtil.createJwt("access", loginId, 86300000L);
-        String refresh = jwtUtil.createJwt("refresh", loginId, 86400000L);
+        String access = jwtUtil.createJwt("access", username, 86300000L);
+        String refresh = jwtUtil.createJwt("refresh", username, 86400000L);
 
         //Refresh 토큰 저장
 //        refreshService.saveRefreshToken(refresh);
 
         // 로그인 성공 로그
-        log.info("Login success for: POST /api/v1/child/login");
+        String path = request.getRequestURI();
+        if (path.equals("/api/v1/child/login")) {
+            log.info("Login success for: POST /api/v1/child/login");
+        } else if (path.equals("/api/v1/parent/login")) {
+            log.info("Login success for: POST /api/v1/parent/login");
+        }
 
         //응답 설정
         response.addHeader("Authorization", "Bearer " + access);
@@ -111,7 +123,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
 
         // 로그인 실패 로그
-        log.info("Login fail for: POST /api/v1/child/login",failed.getMessage());
+        String path = request.getRequestURI();
+        if (path.equals("/api/v1/child/login")) {
+            log.info("Login failed for: POST /api/v1/child/login");
+        } else if (path.equals("/api/v1/parent/login")) {
+            log.info("Login failed for: POST /api/v1/parent/login");
+        }
 
         throw new SsookException(ErrorCode.LOGIN_FAILED);
     }

@@ -58,9 +58,18 @@ public class CustomUserDetails implements UserDetails {
         return true;
     }
 
+    // 유저 ID 반환 메서드
     public Integer getChildId() {
         if (user instanceof Child) {
             return ((Child) user).getChildId();
+        }
+        return null;
+    }
+
+    // 부모 ID 반환 메서드
+    public Integer getParentId() {
+        if (user instanceof Parent) {
+            return ((Parent) user).getParentId();
         }
         return null;
     }
