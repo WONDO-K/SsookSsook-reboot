@@ -3,6 +3,7 @@ package com.stillalive.Ssook_BE.diner.controller;
 import com.stillalive.Ssook_BE.common.ApiResponse;
 import com.stillalive.Ssook_BE.diner.dto.AngelListResDto;
 import com.stillalive.Ssook_BE.diner.dto.DinerListResDto;
+import com.stillalive.Ssook_BE.diner.dto.DinerMenuListResDto;
 import com.stillalive.Ssook_BE.diner.dto.DinerResDto;
 import com.stillalive.Ssook_BE.diner.service.DinerService;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
@@ -72,6 +73,24 @@ public class DinerController {
                 )
         );
     }
+
+    @Operation(summary = "식당 메뉴 목록 조회", description = "식당 메뉴 목록을 조회합니다.")
+    @GetMapping("/{dinerId}/menu")
+    public ResponseEntity<ApiResponse<DinerMenuListResDto>> getDinerMenu(@AuthenticationPrincipal CustomUserDetails customUserDetails
+            , @PathVariable Integer dinerId) {
+
+        DinerMenuListResDto dinerMenuListResDto = dinerService.getDinerMenuList(dinerId);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "식당 메뉴 목록을 조회합니다.",
+                        dinerMenuListResDto
+                )
+        );
+    }
+
 
 
 }
