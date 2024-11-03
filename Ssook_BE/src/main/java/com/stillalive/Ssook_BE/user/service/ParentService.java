@@ -138,4 +138,21 @@ public class ParentService {
 
     }
 
+    // 자녀 상세 조회
+    public ChildResDto findChild(Integer childId) {
+        Child child = childRepository.findById(childId).orElseThrow(() -> {
+            throw new SsookException(ErrorCode.NOT_FOUND_CHILD);
+        });
+
+        return ChildResDto.builder()
+                .childId(child.getChildId())
+                .name(child.getName())
+                .tel(child.getTel())
+                .bday(child.getBday())
+                .gender(child.getGender())
+                .point(child.getPoint())
+                .schoolName(child.getSchool().getName())
+                .build();
+    }
+
 }

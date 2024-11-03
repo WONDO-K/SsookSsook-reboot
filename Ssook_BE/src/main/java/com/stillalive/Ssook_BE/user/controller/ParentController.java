@@ -121,5 +121,21 @@ public class ParentController {
         );
     }
 
+    @Operation(summary = "자세 상세 조회", description = "자세 상세를 조회합니다.")
+    @GetMapping("/child/{childId}")
+    public ResponseEntity<ApiResponse<ChildResDto>> findChild(@PathVariable Integer childId) {
+
+        ChildResDto childResDto = parentService.findChild(childId);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "자세 상세를 조회했습니다.",
+                        childResDto
+                )
+        );
+    }
+
 
 }
