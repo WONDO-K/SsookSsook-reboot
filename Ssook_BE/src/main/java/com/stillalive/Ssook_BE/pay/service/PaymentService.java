@@ -1,10 +1,7 @@
 package com.stillalive.Ssook_BE.pay.service;
 
 import com.stillalive.Ssook_BE.domain.ChildHistory;
-import com.stillalive.Ssook_BE.pay.dto.ChildHistoryResDto;
-import com.stillalive.Ssook_BE.pay.dto.MyCardResDto;
-import com.stillalive.Ssook_BE.pay.dto.PaymentReqDto;
-import com.stillalive.Ssook_BE.pay.dto.RegisterCardReqDto;
+import com.stillalive.Ssook_BE.pay.dto.*;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;
@@ -24,4 +21,7 @@ public interface PaymentService {
     ChildHistory getPaymentDetail(int userId, int historyId);
 
     void chargePoints(int parentId, int amount); // 포인트 충전
+
+    void chargePoint(ChargePointReqDto dto);
+
 }
