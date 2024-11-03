@@ -2,13 +2,12 @@ package com.stillalive.Ssook_BE.user.controller;
 
 import com.stillalive.Ssook_BE.common.ApiResponse;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
-import com.stillalive.Ssook_BE.user.dto.AddChildReqDto;
-import com.stillalive.Ssook_BE.user.dto.ParentLoginReqDto;
-import com.stillalive.Ssook_BE.user.dto.ParentSignupReqDto;
+import com.stillalive.Ssook_BE.user.dto.*;
 import com.stillalive.Ssook_BE.user.service.ParentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -85,5 +84,58 @@ public class ParentController {
                 )
         );
     }
+
+    @Operation(summary = "신청한 자녀 추가 목록 조회", description = "신청한 자녀 추가 목록을 조회합니다.")
+    @GetMapping("/req-list")
+    public ResponseEntity<ApiResponse<AddChildReqListResDto>> findReqChildList(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        Integer parentId = customUserDetails.getParentId();
+
+        AddChildReqListResDto reqChildListResDto = parentService.getReqChildList(parentId);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "신청한 자녀 추가 목록을 조회했습니다.",
+                        reqChildListResDto
+                )
+        );
+    }
+
+    @Operation(summary = "자녀 목록 조회", description = "자녀 목록을 조회합니다.")
+    @GetMapping("/child")
+    public ResponseEntity<ApiResponse<ChildListResDto>> findChildList(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        Integer parentId = customUserDetails.getParentId();
+
+        ChildListResDto childListResDto = parentService.findChildList(parentId);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "자녀 목록을 조회했습니다.",
+                        childListResDto
+                )
+        );
+    }
+
+    @Operation(summary = "자세 상세 조회", description = "자세 상세를 조회합니다.")
+    @GetMapping("/child/{childId}")
+    public ResponseEntity<ApiResponse<ChildResDto>> findChild(@PathVariable Integer childId) {
+
+        ChildResDto childResDto = parentService.findChild(childId);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "자세 상세를 조회했습니다.",
+                        childResDto
+                )
+        );
+    }
+
 
 }

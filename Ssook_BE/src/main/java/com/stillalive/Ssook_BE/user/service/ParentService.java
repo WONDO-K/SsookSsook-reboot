@@ -7,8 +7,7 @@ import com.stillalive.Ssook_BE.enums.Gender;
 import com.stillalive.Ssook_BE.enums.Progress;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
-import com.stillalive.Ssook_BE.user.dto.AddChildReqDto;
-import com.stillalive.Ssook_BE.user.dto.ParentSignupReqDto;
+import com.stillalive.Ssook_BE.user.dto.*;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
 import com.stillalive.Ssook_BE.user.repository.ParentRepository;
@@ -18,6 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -87,6 +89,70 @@ public class ParentService {
                 .status(Progress.PENDING)
                 .build());
 
+    }
+
+    public AddChildReqListResDto getReqChildList(Integer parentId) {
+        List<AddChildReqResDto> list = familyRelationRepository.findByParent_ParentIdAndStatus(parentId, Progress.PENDING)
+                .stream()
+                .map(familyRelation -> AddChildReqResDto.builder()
+                        .familyRelationId(familyRelation.getId())
+                        .childName(familyRelation.getChild().getName())
+                        .childTel(familyRelation.getChild().getTel())
+                        .requestedAt(familyRelation.getCreatedAt())
+                        .build())
+                .toList();
+
+        return AddChildReqListResDto.builder()
+                .addChildReqList(list)
+                .build();
+    }
+
+    public ChildListResDto findChildList(Integer parentId) {
+
+        List<FamilyRelation> familyRelations = familyRelationRepository.findAllByParent_ParentIdAndStatus(parentId, Progress.YES);
+
+        // Get the child IDs from the family relations
+        List<Integer> childIds = familyRelations.stream()
+                .map(familyRelation -> familyRelation.getChild().getChildId())
+                .collect(Collectors.toList());
+
+        // Find all children using the child IDs
+        List<Child> children = childRepository.findAllById(childIds);
+
+        List<ChildResDto> childResDtos = children.stream()
+                .map(child -> ChildResDto.builder()
+                        .childId(child.getChildId())
+                        .name(child.getName())
+                        .tel(child.getTel())
+                        .bday(child.getBday())
+                        .gender(child.getGender())
+                        .point(child.getPoint())
+                        .schoolName(child.getSchool().getName())
+                        .build())
+                .collect(Collectors.toList());
+
+        return ChildListResDto.builder()
+                .childList(childResDtos)
+                .totalItems(childResDtos.size())
+                .build();
+
+    }
+
+    // 자녀 상세 조회
+    public ChildResDto findChild(Integer childId) {
+        Child child = childRepository.findById(childId).orElseThrow(() -> {
+            throw new SsookException(ErrorCode.NOT_FOUND_CHILD);
+        });
+
+        return ChildResDto.builder()
+                .childId(child.getChildId())
+                .name(child.getName())
+                .tel(child.getTel())
+                .bday(child.getBday())
+                .gender(child.getGender())
+                .point(child.getPoint())
+                .schoolName(child.getSchool().getName())
+                .build();
     }
 
 }
