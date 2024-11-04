@@ -25,6 +25,7 @@ public class SchoolMeal {
     private Date date;
 
     @Column(name = "meal", nullable = false)
+    @Enumerated(EnumType.STRING)
     private Meal meal;
 
 }

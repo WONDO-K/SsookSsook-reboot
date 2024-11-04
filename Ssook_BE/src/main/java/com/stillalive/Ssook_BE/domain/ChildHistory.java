@@ -45,7 +45,7 @@ public class ChildHistory {
     private Integer pointPrice;
 
     @CreatedDate
-    @Column(name = "created_at", updatable = false, nullable = false, columnDefinition = "LOCALDATETIME DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created_at", updatable = false, nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime historyTime;
 
     @OneToMany(mappedBy = "childHistory", cascade = CascadeType.ALL, orphanRemoval = true)

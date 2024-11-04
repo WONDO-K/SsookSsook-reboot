@@ -38,6 +38,11 @@ spring:
         hibernate:
             ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
             database-platform: org.hibernate.dialect.MySQLDialect
+            temp:
+                use_jdbc_metadata_defaults: false
+    devtools:
+        restart:
+            enabled: false
 
 #    logging:
 #        level:
