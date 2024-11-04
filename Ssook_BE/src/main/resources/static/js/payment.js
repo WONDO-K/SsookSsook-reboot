@@ -3,14 +3,14 @@ var IMP = window.IMP;
 IMP.init("imp84868367");
 
 buyButton.onclick = function () {
-    const loginId = '{{loginId}}';
-    const userId = '{{userId}}';
+    const loginId = document.getElementById('hiddenLoginId').value;  // 숨겨진 필드에서 값 가져오기
+    const userId = parseInt(document.getElementById('hiddenUserId').value, 10); // 정수로 변환
     const amountInput = document.getElementById('amount').value;
 
     if (!amountInput || isNaN(amountInput) || amountInput <= 0) {
         alert("충전할 금액을 올바르게 입력하세요.");
         return;
-    }
+    }0
 
     kakaoPay(loginId, userId, amountInput);
 };
@@ -31,9 +31,13 @@ function kakaoPay(loginId, userId, amount) {
             if (rsp.success) {
                 // 충전 완료 후 서버에 포인트 충전 요청
                 $.ajax({
-                    url: "/api/payment/charge",
+                    url: "/api/v1/pay/point/charge",
                     method: "POST",
-                    data: JSON.stringify({ amount: rsp.paid_amount, userId: userId }), // userId로 식별
+                    data: JSON.stringify({
+                        impUid: rsp.imp_uid, // impUid 포함
+                        userId: userId,
+                        amount: rsp.paid_amount
+                    }),
                     contentType: "application/json",
                     success: function (response) {
                         if (response.status === 200) {

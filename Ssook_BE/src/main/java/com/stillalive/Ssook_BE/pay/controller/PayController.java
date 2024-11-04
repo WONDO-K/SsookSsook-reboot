@@ -9,6 +9,8 @@ import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.service.ParentService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,6 +22,9 @@ import java.util.List;
 @RequestMapping("/api/v1/pay")
 @AllArgsConstructor
 public class PayController {
+
+    private static final Logger log = LoggerFactory.getLogger(PayController.class);
+
 
     private final PaymentService paymentService;
     private final ChildRepository childRepository;
@@ -133,9 +138,21 @@ public class PayController {
     @PostMapping("/point/charge")
     @Operation(summary = "포인트 충전", description = "포인트 충전 API")
     public ResponseEntity<ApiResponse<?>> chargePoint(@RequestBody ChargePointReqDto dto) {
-        paymentService.chargePoint(dto);
-        return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "포인트가 충전되었습니다.", null));
-    }
+        // 요청 데이터 로깅
+        log.info("포인트 충전 요청 - 사용자 ID: {}, 충전 금액: {}, 결제 고유 ID: {}",
+                dto.getUserId(), dto.getAmount(), dto.getImpUid());
 
+        try {
+            // 충전 서비스 호출
+            paymentService.chargePoint(dto);
+            log.info("포인트 충전 완료 - 사용자 ID: {}, 충전 금액: {}", dto.getUserId(), dto.getAmount());
+            return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "포인트가 충전되었습니다.", null));
+        } catch (Exception e) {
+            // 에러 발생 시 로그
+            log.error("포인트 충전 실패 - 사용자 ID: {}, 에러: {}", dto.getUserId(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.of(HttpStatus.INTERNAL_SERVER_ERROR.value(), "충전 실패", "충전 중 문제가 발생했습니다.", null));
+        }
+    }
 }
 
