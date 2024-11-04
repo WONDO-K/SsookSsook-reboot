@@ -19,13 +19,13 @@ public class Alert {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // 알림 고유 ID
+    private int id; // 알림 고유 ID
 
     @Column(nullable = false)
-    private Long senderId; // 알림을 보낸 사용자 ID (부모 혹은 자식)
+    private int senderId; // 알림을 보낸 사용자 ID (부모 혹은 자식)
 
     @Column(nullable = false)
-    private Long receiverId; // 알림을 받을 사용자 ID (부모 혹은 자식)
+    private int receiverId; // 알림을 받을 사용자 ID (부모 혹은 자식)
 
     @Column(nullable = false)
     private String title; // 알림 제목

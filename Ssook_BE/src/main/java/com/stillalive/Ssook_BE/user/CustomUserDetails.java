@@ -58,6 +58,16 @@ public class CustomUserDetails implements UserDetails {
         return true;
     }
 
+    // 유저가 부모인지 확인하는 메서드
+    public boolean isParent() {
+        return user instanceof Parent;
+    }
+
+    // 유저가 자식인지 확인하는 메서드
+    public boolean isChild() {
+        return user instanceof Child;
+    }
+
     // 유저 ID 반환 메서드
     public Integer getChildId() {
         if (user instanceof Child) {
