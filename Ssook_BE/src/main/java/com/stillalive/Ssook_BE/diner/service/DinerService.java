@@ -121,4 +121,27 @@ public class DinerService {
     }
 
 
+//    // 추천 메뉴 판매 식당 목록 조회
+//    public DinerListResDto getDinerListByFood(Integer foodId) {
+//        return DinerListResDto.builder()
+//                .dinerList(
+//                        dinerRepository.findDinersByFood(foodId)
+//                                .stream()
+//                                .map(diner -> DinerResDto.builder()
+//                                        .dinerId(diner.getId())
+//                                        .name(diner.getName())
+//                                        .address(diner.getAddress())
+//                                        .lat(diner.getLat())
+//                                        .lng(diner.getLng())
+//                                        .tel(diner.getTel())
+//                                        .isAngel(diner.getIsAngel())
+//                                        .build()
+//                                )
+//                                .collect(Collectors.toList())
+//                )
+//                .totalItems(dinerRepository.findDinersByFood(foodId).size())
+//                .build();
+//    }
+
+
 }

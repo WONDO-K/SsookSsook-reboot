@@ -104,6 +104,27 @@ public class DinerController {
         );
     }
 
+    @Operation(summary = "[미완성] 추천메뉴 판매식당 목록 조회", description = "추천 메뉴를 판매하는 식당 목록을 조회합니다.")
+    @Deprecated
+    @GetMapping("/{foodId}")
+    public ResponseEntity<ApiResponse<DinerListResDto>> getDinerListByFood(@AuthenticationPrincipal CustomUserDetails customUserDetails
+            , @PathVariable Integer foodId) {
+
+        DinerListResDto dinerListResDto = null;
+
+//        dinerListResDto = dinerService.getDinerListByFood(foodId);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "추천 메뉴를 판매하는 식당 목록을 조회합니다.",
+                        dinerListResDto
+                )
+        );
+    }
+
+
 
 
 }
