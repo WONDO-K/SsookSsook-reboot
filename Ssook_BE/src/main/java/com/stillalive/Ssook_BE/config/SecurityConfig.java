@@ -80,7 +80,7 @@ public class SecurityConfig {
     private CorsConfigurationSource corsConfigurationSource() {
         return request -> {
             CorsConfiguration configuration = new CorsConfiguration();
-            configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080", "http://localhost:5173", "https://ssook.duckdns.org/"));
+            configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080", "http://localhost:5173", "https://ssook.duckdns.org/", "https://ssookssook.kr"));
             configuration.setAllowedMethods(Collections.singletonList("*"));
             configuration.setAllowCredentials(true);
             configuration.setAllowedHeaders(Collections.singletonList("*"));
