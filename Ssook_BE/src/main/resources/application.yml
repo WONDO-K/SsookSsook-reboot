@@ -1,6 +1,10 @@
 server:
     port: ${SERVER_PORT}  # ?? ??? ??
 
+    servlet:
+        encoding:
+            force-response: true
+
 spring:
     application:
         name: Ssook_BE

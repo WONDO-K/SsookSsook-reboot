@@ -6,16 +6,14 @@ import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.menu.repository.MenuRepository;
 import com.stillalive.Ssook_BE.menu.service.MenuNutService;
-import com.stillalive.Ssook_BE.pay.dto.ChildHistoryResDto;
-import com.stillalive.Ssook_BE.pay.dto.MyCardResDto;
-import com.stillalive.Ssook_BE.pay.dto.PaymentReqDto;
-import com.stillalive.Ssook_BE.pay.dto.RegisterCardReqDto;
+import com.stillalive.Ssook_BE.pay.dto.*;
 import com.stillalive.Ssook_BE.pay.repository.BalanceRepository;
 import com.stillalive.Ssook_BE.pay.repository.CardRepository;
 import com.stillalive.Ssook_BE.pay.repository.HistoryRepository;
 import com.stillalive.Ssook_BE.pay.service.PaymentService;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
+import com.stillalive.Ssook_BE.user.repository.ParentRepository;
 import com.stillalive.Ssook_BE.util.JWTUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,6 +34,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final HistoryRepository historyRepository;
     private final FamilyRelationRepository familyRelationRepository;
     private final MenuRepository menuRepository;
+    private final ParentRepository parentRepository;
 //    private final MenuNutService menuNutService;
     private final JWTUtil jwtUtil;
 
@@ -167,6 +166,20 @@ public class PaymentServiceImpl implements PaymentService {
         return child.getPoint();
     }
 
+
+    @Override
+    @Transactional
+    public void chargePoints(int parentId, int amount) {
+        Parent parent = parentRepository.findById(parentId)
+                .orElseThrow(() -> new SsookException(ErrorCode.USER_NOT_FOUND));
+
+        int newPointBalance = parent.getPoint() + amount;
+        parent.setPoint(newPointBalance);
+        parentRepository.save(parent);
+    }
+
+
+
     @Override
     public List<ChildHistoryResDto> getPaymentList(int childId, Integer months) {
 
@@ -227,5 +240,16 @@ public class PaymentServiceImpl implements PaymentService {
         return childHistory;
     }
 
+    @Override
+    @Transactional
+    public void chargePoint(ChargePointReqDto dto) {
+        // 부모 유저의 존재 여부 확인
+        Parent parent = parentRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new SsookException(ErrorCode.USER_NOT_FOUND));
+
+        // 포인트 충전 로직
+        parent.setPoint(parent.getPoint() + dto.getAmount());
+        parentRepository.save(parent); // 충전된 포인트를 부모 계정에 저장
+    }
 
 }

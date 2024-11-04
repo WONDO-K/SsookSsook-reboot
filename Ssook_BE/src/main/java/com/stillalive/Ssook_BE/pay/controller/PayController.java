@@ -2,13 +2,12 @@ package com.stillalive.Ssook_BE.pay.controller;
 
 import com.stillalive.Ssook_BE.common.ApiResponse;
 import com.stillalive.Ssook_BE.domain.ChildHistory;
-import com.stillalive.Ssook_BE.pay.dto.ChildHistoryResDto;
-import com.stillalive.Ssook_BE.pay.dto.MyCardResDto;
-import com.stillalive.Ssook_BE.pay.dto.PaymentReqDto;
-import com.stillalive.Ssook_BE.pay.dto.RegisterCardReqDto;
+import com.stillalive.Ssook_BE.pay.dto.*;
 import com.stillalive.Ssook_BE.pay.service.PaymentService;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
+import com.stillalive.Ssook_BE.user.service.ParentService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,12 +23,14 @@ public class PayController {
 
     private final PaymentService paymentService;
     private final ChildRepository childRepository;
+    private final ParentService parentService;
 
     /**
      * 카드 등록 API
      * */
 
     @PostMapping("/register")
+    @Operation(summary = "카드 등록", description = "카드 등록 API")
     public ResponseEntity<ApiResponse<?>> registerCard(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody RegisterCardReqDto dto) {
         int childId = userDetails.getChildId();
         paymentService.registerCard(dto, childId);
@@ -40,6 +41,7 @@ public class PayController {
      * 포인트 조회
      * */
     @GetMapping("/point/balance")
+    @Operation(summary = "포인트 조회", description = "포인트 조회 API")
     public ResponseEntity<ApiResponse<?>> getPointBalance(@AuthenticationPrincipal CustomUserDetails userDetails) {
         int childId = userDetails.getChildId();
         int pointBalance = paymentService.getPointBalance(childId);
@@ -64,6 +66,7 @@ public class PayController {
      *
      * */
     @PostMapping
+    @Operation(summary = "결제 처리", description = "결제 처리 API")
     public ResponseEntity<ApiResponse<?>>  processPayment(@RequestBody PaymentReqDto dto) {
         paymentService.processPayment(dto);
         return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "결제가 완료되었습니다.", null));
@@ -75,6 +78,7 @@ public class PayController {
      *
      * */
     @GetMapping("/my-card")
+    @Operation(summary = "내 카드 조회", description = "내 카드 조회 API")
     public ResponseEntity<MyCardResDto> getMyCard(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(paymentService.getMyCard(userDetails.getChildId()));
     }
@@ -83,6 +87,7 @@ public class PayController {
      * 거래내역 리스트 조회
      * */
     @GetMapping("/list")
+    @Operation(summary = "거래내역 리스트 조회", description = "거래내역 리스트 조회 API")
     public ResponseEntity<ApiResponse<?>> getPaymentList(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(required = false) Integer months) {
@@ -97,6 +102,7 @@ public class PayController {
      * 거래내역 상세 조회
      * */
     @GetMapping("/detail/{historyId}")
+    @Operation(summary = "거래내역 상세 조회", description = "거래내역 상세 조회 API")
     public ResponseEntity<ApiResponse<?>>  getPaymentDetail(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable int historyId) {
@@ -112,6 +118,23 @@ public class PayController {
         ChildHistory paymentDetail = paymentService.getPaymentDetail(userId, historyId);
 
         return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "거래내역 상세 조회 성공", paymentDetail));
+    }
+
+    @PostMapping("/kakaopay/success")
+    @Operation(summary = "카카오페이 결제 성공 처리", description = "카카오페이 결제 성공 시 호출되는 API")
+    public ResponseEntity<ApiResponse<?>> chargePoints(@RequestBody KakaoPaySuccessResDto responseDto) {
+        paymentService.chargePoints(responseDto.getParentId(), responseDto.getAmount());
+        return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "포인트 충전 성공", null));
+    }
+
+    /**
+     * 포인트 충전 API
+     */
+    @PostMapping("/point/charge")
+    @Operation(summary = "포인트 충전", description = "포인트 충전 API")
+    public ResponseEntity<ApiResponse<?>> chargePoint(@RequestBody ChargePointReqDto dto) {
+        paymentService.chargePoint(dto);
+        return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "포인트가 충전되었습니다.", null));
     }
 
 }
