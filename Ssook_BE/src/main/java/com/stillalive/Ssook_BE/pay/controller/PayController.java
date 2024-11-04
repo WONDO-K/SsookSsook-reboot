@@ -131,6 +131,7 @@ public class PayController {
      * 포인트 충전 API
      */
     @PostMapping("/point/charge")
+    @Operation(summary = "포인트 충전", description = "포인트 충전 API")
     public ResponseEntity<ApiResponse<?>> chargePoint(@RequestBody ChargePointReqDto dto) {
         paymentService.chargePoint(dto);
         return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "포인트가 충전되었습니다.", null));
