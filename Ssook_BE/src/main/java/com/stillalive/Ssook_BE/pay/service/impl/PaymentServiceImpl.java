@@ -160,10 +160,10 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public int getPointBalance(int childId) {
+    public PointBalanceResDto getPointBalance(int childId) {
         Child child = childRepository.findById(childId)
                 .orElseThrow(() -> new SsookException(ErrorCode.USER_NOT_FOUND));
-        return child.getPoint();
+        return PointBalanceResDto.builder().pointBalance(child.getPoint()).build();
     }
 
 
@@ -227,7 +227,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .build();
 
         List<PayDetail> payDetailList = dto.getPayDetails().stream().map(detailDto -> {
-            Menu menu = menuRepository.findById(detailDto.getMenuId())
+            Menu menu = menuRepository.findByName(detailDto.getMenuName())
                     .orElseThrow(() -> new SsookException(ErrorCode.MENU_NOT_FOUND));
 
             // MenuNut 조회 또는 생성

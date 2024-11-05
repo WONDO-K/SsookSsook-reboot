@@ -1,5 +1,6 @@
 package com.stillalive.Ssook_BE.user.repository;
 
+import com.stillalive.Ssook_BE.domain.Child;
 import com.stillalive.Ssook_BE.domain.FamilyRelation;
 import com.stillalive.Ssook_BE.domain.Parent;
 import com.stillalive.Ssook_BE.enums.Progress;
@@ -25,4 +26,6 @@ public interface FamilyRelationRepository extends JpaRepository<FamilyRelation, 
     List<FamilyRelation> findAllByParent_ParentIdAndStatus(Integer parentId, Progress progress);
 
     List<FamilyRelation> findAllByChild_ChildIdAndStatus(Integer childId, Progress progress);
+
+    Optional<Object> findByParentAndChildAndStatus(Parent parent, Child child, Progress progress);
 }

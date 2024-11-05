@@ -48,10 +48,14 @@ public class PayController {
     @GetMapping("/point/balance")
     @Operation(summary = "포인트 조회", description = "포인트 조회 API")
     public ResponseEntity<ApiResponse<?>> getPointBalance(@AuthenticationPrincipal CustomUserDetails userDetails) {
+
         int childId = userDetails.getChildId();
-        int pointBalance = paymentService.getPointBalance(childId);
-        String message = "포인트 잔액은 " + pointBalance + " 원 입니다";
-        return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), message, pointBalance));    }
+        PointBalanceResDto dto = paymentService.getPointBalance(childId);
+
+        String message = "포인트 잔액은 " + dto.getPointBalance() + " 원 입니다";
+
+        return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), message, dto));
+    }
 
 
 
@@ -73,6 +77,7 @@ public class PayController {
     @PostMapping
     @Operation(summary = "결제 처리", description = "결제 처리 API")
     public ResponseEntity<ApiResponse<?>>  processPayment(@RequestBody PaymentReqDto dto) {
+
         paymentService.processPayment(dto);
         return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "결제가 완료되었습니다.", null));
     }
@@ -154,5 +159,6 @@ public class PayController {
                     .body(ApiResponse.of(HttpStatus.INTERNAL_SERVER_ERROR.value(), "충전 실패", "충전 중 문제가 발생했습니다.", null));
         }
     }
+
 }
 

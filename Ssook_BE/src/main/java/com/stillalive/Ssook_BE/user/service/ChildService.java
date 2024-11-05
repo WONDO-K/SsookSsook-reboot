@@ -2,15 +2,22 @@ package com.stillalive.Ssook_BE.user.service;
 
 import com.stillalive.Ssook_BE.domain.Child;
 import com.stillalive.Ssook_BE.domain.FamilyRelation;
+import com.stillalive.Ssook_BE.domain.Parent;
 import com.stillalive.Ssook_BE.domain.School;
 import com.stillalive.Ssook_BE.enums.Gender;
 import com.stillalive.Ssook_BE.enums.Progress;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
+import com.stillalive.Ssook_BE.user.dto.RequestPointReqDto;
 import com.stillalive.Ssook_BE.user.dto.*;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
+import com.stillalive.Ssook_BE.user.repository.ParentRepository;
+import com.stillalive.Ssook_BE.util.alert.AlertService;
+import com.stillalive.Ssook_BE.util.alert.dto.AlertDtoMapper;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +34,10 @@ public class ChildService {
     private final FamilyRelationRepository familyRelationRepository;
     private final SchoolRepository schoolRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final ParentRepository parentRepository;
+    private final AlertService alertService;
+
+    private static final Logger log = LoggerFactory.getLogger(ChildService.class);
 
     @Transactional
     public void join(ChildSignupReqDto childSignupReqDto) {
@@ -128,5 +139,25 @@ public class ChildService {
                 .parentList(list)
                 .totalItems(list.size())
                 .build();
+    }
+
+    public void requestPoint(RequestPointReqDto dto) {
+        Child child = childRepository.findById(dto.getChildId())
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_CHILD));
+        Parent parent = parentRepository.findById(dto.getParentId())
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_PARENT));
+
+        // 부모-자식 관계 확인
+        familyRelationRepository.findByParentAndChildAndStatus(parent, child, Progress.YES)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_MY_FAMILY_RELATION));
+
+
+        // 알림 전송
+        alertService.sendAlert(
+                parent.getParentId(),
+                AlertDtoMapper.toRequestPointAlert(parent.getParentId(), child.getName())
+        );
+
+        log.info("포인트 요청 알림 전송 완료 - 부모 ID: {}, 자녀 ID: {}", parent.getParentId(), child.getChildId());
     }
 }

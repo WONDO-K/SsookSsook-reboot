@@ -1,7 +1,8 @@
 package com.stillalive.Ssook_BE.util.alert;
 
-
 import com.stillalive.Ssook_BE.domain.Alert;
+import com.stillalive.Ssook_BE.user.repository.ChildRepository;
+import com.stillalive.Ssook_BE.user.repository.ParentRepository;
 import com.stillalive.Ssook_BE.util.alert.dto.AlertDto;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -24,7 +25,8 @@ public class AlertServiceImpl implements AlertService {
 
     private final Map<Integer, Sinks.Many<AlertDto>> userAlerts = new ConcurrentHashMap<>();
     private final AlertRepository alertRepository;
-
+    private final ParentRepository parentRepository;
+    private final ChildRepository childRepository;
 
     @Override
     public Flux<AlertDto> getAlertsForUser(int userId) {
@@ -55,7 +57,15 @@ public class AlertServiceImpl implements AlertService {
 
     @Override
     public List<AlertDto> getAlertHistory(int userId) {
-        List<Alert> alerts = alertRepository.findAllByUserIdOrderByTimestampDesc(userId);
+        List<Alert> alerts;
+        if (isParent(userId)) {
+            alerts = alertRepository.findAllByReceiverIdOrderByTimestampDesc(userId);
+        } else if (isChild(userId)) {
+            alerts = alertRepository.findAllBySenderIdOrderByTimestampDesc(userId);
+        } else {
+            throw new IllegalArgumentException("존재하지 않는 사용자 ID입니다: " + userId);
+        }
+
         return alerts.stream()
                 .map(alert -> AlertDto.builder()
                         .id(alert.getId())
@@ -70,7 +80,13 @@ public class AlertServiceImpl implements AlertService {
 
     @Override
     public long countUnreadAlerts(int userId) {
-        return alertRepository.countByUserIdAndIsReadFalse(userId);
+        if (isParent(userId)) {
+            return alertRepository.countByReceiverIdAndIsReadFalse(userId);
+        } else if (isChild(userId)) {
+            return alertRepository.countBySenderIdAndIsReadFalse(userId);
+        } else {
+            throw new IllegalArgumentException("존재하지 않는 사용자 ID입니다: " + userId);
+        }
     }
 
     @Override
@@ -83,8 +99,23 @@ public class AlertServiceImpl implements AlertService {
 
     @Override
     public void markAllAsRead(int userId) {
-        List<Alert> alerts = alertRepository.findAllByUserIdAndIsReadFalse(userId);
+        List<Alert> alerts;
+        if (isParent(userId)) {
+            alerts = alertRepository.findAllByReceiverIdAndIsReadFalse(userId);
+        } else if (isChild(userId)) {
+            alerts = alertRepository.findAllBySenderIdAndIsReadFalse(userId);
+        } else {
+            throw new IllegalArgumentException("존재하지 않는 사용자 ID입니다: " + userId);
+        }
         alerts.forEach(alert -> alert.setRead(true));
         alertRepository.saveAll(alerts);
+    }
+
+    private boolean isParent(int userId) {
+        return parentRepository.existsById(userId);
+    }
+
+    private boolean isChild(int userId) {
+        return childRepository.existsById(userId);
     }
 }

@@ -1,7 +1,7 @@
 package com.stillalive.Ssook_BE.user.controller;
 
 import com.stillalive.Ssook_BE.common.ApiResponse;
-import com.stillalive.Ssook_BE.domain.FamilyRelation;
+import com.stillalive.Ssook_BE.user.dto.RequestPointReqDto;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
 import com.stillalive.Ssook_BE.user.dto.*;
 import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
@@ -123,5 +123,24 @@ public class ChildController {
                 )
         );
     }
+
+    @Operation(summary = "포인트 요청", description = "포인트 요청을 합니다.")
+    @PostMapping("/point/request")
+    public ResponseEntity<ApiResponse<Void>> requestPoint(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody RequestPointReqDto dto) {
+
+            Integer childId = customUserDetails.getChildId();
+            dto.setChildId(childId);
+
+            childService.requestPoint(dto);
+
+            return ResponseEntity.ok(
+                    ApiResponse.of(
+                            200,
+                            "OK",
+                            "포인트 요청을 했습니다.",
+                            null
+                    )
+            );
+        }
 
 }

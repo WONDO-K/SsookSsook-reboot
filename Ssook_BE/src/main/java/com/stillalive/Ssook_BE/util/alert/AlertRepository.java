@@ -9,9 +9,22 @@ import java.util.List;
 
 @Repository
 public interface AlertRepository extends JpaRepository<Alert, Integer> {
-    List<Alert> findAllByUserIdOrderByTimestampDesc(int userId);
 
-    long countByUserIdAndIsReadFalse(int userId);
+    // 부모 ID로 알림 내역을 시간순으로 조회
+    List<Alert> findAllByReceiverIdOrderByTimestampDesc(int receiverId);
 
-    List<Alert> findAllByUserIdAndIsReadFalse(int userId);
+    // 자식 ID로 알림 내역을 시간순으로 조회
+    List<Alert> findAllBySenderIdOrderByTimestampDesc(int senderId);
+
+    // 부모 ID로 읽지 않은 알림 수 조회
+    long countByReceiverIdAndIsReadFalse(int receiverId);
+
+    // 자식 ID로 읽지 않은 알림 수 조회
+    long countBySenderIdAndIsReadFalse(int senderId);
+
+    // 부모 ID로 읽지 않은 알림 조회
+    List<Alert> findAllByReceiverIdAndIsReadFalse(int receiverId);
+
+    // 자식 ID로 읽지 않은 알림 조회
+    List<Alert> findAllBySenderIdAndIsReadFalse(int senderId);
 }

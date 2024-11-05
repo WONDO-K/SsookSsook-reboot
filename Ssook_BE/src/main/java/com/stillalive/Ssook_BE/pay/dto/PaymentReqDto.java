@@ -37,7 +37,7 @@ public class PaymentReqDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class PayDetailDto {
-        private Integer menuId;
+        private String menuName;
         private Integer quantity;
     }
 }

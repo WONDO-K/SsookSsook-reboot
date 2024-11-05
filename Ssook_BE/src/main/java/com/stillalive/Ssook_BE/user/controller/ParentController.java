@@ -121,7 +121,7 @@ public class ParentController {
         );
     }
 
-    @Operation(summary = "자세 상세 조회", description = "자세 상세를 조회합니다.")
+    @Operation(summary = "자녀 상세 조회", description = "자녀 상세를 조회합니다.")
     @GetMapping("/child/{childId}")
     public ResponseEntity<ApiResponse<ChildResDto>> findChild(@PathVariable Integer childId) {
 
@@ -136,6 +136,23 @@ public class ParentController {
                 )
         );
     }
+    @PostMapping("/point/transfer")
+    @Operation(summary = "포인트 전송", description = "포인트를 전송합니다.")
+    public ResponseEntity<ApiResponse<Void>> transferPoint(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody PointTransferReqDto dto) {
 
+        Integer parentId = customUserDetails.getParentId();
+        dto.setParentId(parentId);
+
+        parentService.transferPoint(parentId, dto);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "포인트 전송이 완료되었습니다.",
+                        null
+                )
+        );
+    }
 
 }

@@ -11,7 +11,11 @@ import com.stillalive.Ssook_BE.user.dto.*;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
 import com.stillalive.Ssook_BE.user.repository.ParentRepository;
+import com.stillalive.Ssook_BE.util.alert.AlertService;
+import com.stillalive.Ssook_BE.util.alert.dto.AlertDtoMapper;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +34,10 @@ public class ParentService {
     private final FamilyRelationRepository familyRelationRepository;
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    private final AlertService alertService;
+    private static final Logger log = LoggerFactory.getLogger(ParentService.class);
+
 
     @Transactional
     public void join(ParentSignupReqDto parentSignupReqDto) {
@@ -155,4 +163,29 @@ public class ParentService {
                 .build();
     }
 
+    public void transferPoint(Integer parentId, PointTransferReqDto dto) {
+        Parent parent = parentRepository.findById(parentId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부모 ID입니다: " + dto.getParentId()));
+        Child child = childRepository.findById(dto.getChildId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 자녀 ID입니다: " + dto.getChildId()));
+
+        // 부모-자식 관계 확인
+        familyRelationRepository.findByParentAndChildAndStatus(parent, child, Progress.YES)
+                .orElseThrow(() -> new IllegalStateException("부모와 자녀 관계가 존재하지 않습니다."));
+
+        if (parent.getPoint() >= dto.getAmount()) {
+            parent.setPoint(parent.getPoint() - dto.getAmount());
+            child.setPoint(child.getPoint() + dto.getAmount());
+            parentRepository.save(parent);
+            childRepository.save(child);
+
+            // 알림 전송
+            alertService.sendAlert(child.getChildId(), AlertDtoMapper.toTransferPointAlert(child.getChildId(), dto.getAmount()));
+
+            log.info("포인트 전송 완료 - 부모 ID: {}, 자녀 ID: {}, 전송 금액: {}", parent.getParentId(), child.getChildId(), dto.getAmount());
+        } else {
+            log.error("포인트 전송 실패 - 부모 ID: {}, 잔액 부족", parent.getParentId());
+            throw new IllegalArgumentException("포인트 잔액이 부족합니다.");
+        }
+    }
 }
