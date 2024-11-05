@@ -74,4 +74,12 @@ public class CustomUserDetails implements UserDetails {
         return null;
     }
 
+    // 학교 코드 반환
+    public Integer getSchoolCode() {
+        if (user instanceof Child) {
+            return ((Child) user).getSchool().getCode();
+        }
+        return null;
+    }
+
 }

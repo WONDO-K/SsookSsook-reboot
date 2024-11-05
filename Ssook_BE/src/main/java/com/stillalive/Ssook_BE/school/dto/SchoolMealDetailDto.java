@@ -12,6 +12,7 @@ import java.util.Map;
 @Builder
 public class SchoolMealDetailDto {
 
+    private Integer id;
     private Date date;
     private String menu;
     private Meal meal;
