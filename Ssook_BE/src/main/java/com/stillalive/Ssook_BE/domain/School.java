@@ -12,15 +12,11 @@ import java.util.List;
 public class School {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "school_id", nullable = false)
-    private Integer schoolId;
+    @Column(name = "code", nullable = false)
+    private Integer code;
 
     @Column(name = "name", nullable = false)
     private String name;
-
-    @Column(name = "code", nullable = false)
-    private String code;
 
     @OneToMany(mappedBy = "school", fetch = FetchType.LAZY)
     private List<Child> children = new ArrayList<>();

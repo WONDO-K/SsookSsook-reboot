@@ -30,7 +30,7 @@ public class Child extends User {
     private Card card;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "school_id")
+    @JoinColumn(name = "code")
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private School school;
 

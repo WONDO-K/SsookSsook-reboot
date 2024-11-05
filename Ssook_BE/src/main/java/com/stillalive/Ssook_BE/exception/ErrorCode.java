@@ -22,6 +22,7 @@ public enum ErrorCode {
     INVALID_LOGIN_REQUEST(HttpStatus.BAD_REQUEST, "로그인 요청을 파싱하지 못했습니다."),
     LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "로그인에 실패했습니다."),
     NOT_EXIST_COOKIE(HttpStatus.UNAUTHORIZED, "쿠키에 값이 없습니다."),
+    INVALID_ID_OR_PASSWORD(HttpStatus.UNAUTHORIZED, "아이디 혹은 비밀번호가 틀렸습니다."),
 
     // User
     DUPLICATE_LOGIN_ID(HttpStatus.CONFLICT, "이미 존재하는 로그인 아이디입니다."),
@@ -61,7 +62,10 @@ public enum ErrorCode {
     NOT_MY_FAMILY_RELATION(HttpStatus.FORBIDDEN, "본인의 가족 관계가 아닙니다."),
 
     // Diner
-    DINER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 식당을 찾을 수 없습니다.");
+    DINER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 식당을 찾을 수 없습니다."),
+
+    // School
+    NOT_FOUND_SCHOOL_MEAL(HttpStatus.NOT_FOUND, "해당 급식을 찾을 수 없습니다.");
 
 
     ;

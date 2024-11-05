@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -116,12 +117,20 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.addHeader("Authorization", "Bearer " + access);
         response.addCookie(createCookie("refresh", refresh));
         response.setStatus(HttpStatus.OK.value());
+        response.setContentType("application/json");
+
+        // 응답 본문에 JSON 데이터 추가
+        try {
+            String jsonResponse = String.format("{\"statusCode\": 200, \"httpStatus\": \"OK\", \"message\": \"Login successful\"}");
+            response.getWriter().write(jsonResponse);
+        } catch (IOException e) {
+            log.error("Error writing response", e);
+        }
     }
 
     //로그인 실패시 실행하는 메소드
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
-
         // 로그인 실패 로그
         String path = request.getRequestURI();
         if (path.equals("/api/v1/child/login")) {
@@ -130,7 +139,25 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             log.info("Login failed for: POST /api/v1/parent/login");
         }
 
-        throw new SsookException(ErrorCode.LOGIN_FAILED);
+        // 403 상태 코드와 JSON 응답 설정
+        response.setStatus(HttpStatus.FORBIDDEN.value());
+        response.setContentType("application/json");
+
+        // 예외 타입에 따른 구체적인 에러 메시지 설정
+        String errorMessage;
+        if (failed instanceof BadCredentialsException) {
+            errorMessage = "Invalid login credentials. Please check your login ID and password.";
+        } else {
+            errorMessage = "Authentication failed. Please try again.";
+        }
+
+        // JSON 형식의 에러 응답 생성
+        try {
+            String jsonResponse = String.format("{\"statusCode\": 403, \"httpStatus\": \"FORBIDDEN\", \"message\": \"%s\"}", errorMessage);
+            response.getWriter().write(jsonResponse);
+        } catch (IOException e) {
+            log.error("Error writing error response", e);
+        }
     }
 
     private Cookie createCookie(String key, String value) {
