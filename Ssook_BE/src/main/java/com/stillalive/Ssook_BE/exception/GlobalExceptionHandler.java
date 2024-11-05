@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
     // 커스텀 예외 처리
     @ExceptionHandler(SsookException.class)
     public ResponseEntity<ApiResponse<?>> handleCustomBusinessException(SsookException ex) {
-        log.error("NewscrabException: {}", ex.getMessage());
+        log.error("SssookException: {}", ex.getMessage());
         ErrorCode errorCode = ex.getErrorCode(); // Get the ErrorCode from the exception
         ApiResponse<?> response = ApiResponse.of(
                 errorCode.getHttpstatus().value(),
