@@ -160,4 +160,5 @@ public class ChildService {
 
         log.info("포인트 요청 알림 전송 완료 - 부모 ID: {}, 자녀 ID: {}", parent.getParentId(), child.getChildId());
     }
+
 }
