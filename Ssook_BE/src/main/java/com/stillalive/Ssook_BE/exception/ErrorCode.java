@@ -61,7 +61,10 @@ public enum ErrorCode {
     NOT_MY_FAMILY_RELATION(HttpStatus.FORBIDDEN, "본인의 가족 관계가 아닙니다."),
 
     // Diner
-    DINER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 식당을 찾을 수 없습니다.");
+    DINER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 식당을 찾을 수 없습니다."),
+
+    // School
+    NOT_FOUND_SCHOOL_MEAL(HttpStatus.NOT_FOUND, "해당 급식을 찾을 수 없습니다.");
 
 
     ;

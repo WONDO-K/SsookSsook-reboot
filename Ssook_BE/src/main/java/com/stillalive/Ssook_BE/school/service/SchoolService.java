@@ -1,10 +1,11 @@
 package com.stillalive.Ssook_BE.school.service;
 
 import com.stillalive.Ssook_BE.domain.SchoolMeal;
+import com.stillalive.Ssook_BE.exception.ErrorCode;
+import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.school.dto.SchoolMealDetailDto;
 import com.stillalive.Ssook_BE.school.dto.SchoolMealListResDto;
 import com.stillalive.Ssook_BE.school.repository.SchoolMealRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -45,7 +46,7 @@ public class SchoolService {
 
     public SchoolMealDetailDto getSchoolMealDetail(Integer schoolMealId) {
         SchoolMeal schoolMeal = schoolMealRepository.findById(schoolMealId)
-                .orElseThrow(() -> new EntityNotFoundException("School meal not found"));
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_SCHOOL_MEAL));
 
         // 영양소 데이터를 Map에 추가
         Map<String, Float> nutrients = new HashMap<>();
