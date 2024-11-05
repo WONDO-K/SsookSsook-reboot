@@ -1,14 +1,14 @@
 package com.stillalive.Ssook_BE.domain;
 
+import com.stillalive.Ssook_BE.domain.base.Nutrient;
 import com.stillalive.Ssook_BE.enums.Meal;
 import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.util.Date;
 
-@Entity
+@Entity(name = "school_meal")
 @Getter
-@Table(name = "school_meal")
 public class SchoolMeal {
 
     @Id
@@ -17,7 +17,7 @@ public class SchoolMeal {
     private Integer schoolMealId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "school_id", nullable = false)
+    @JoinColumn(name = "code", nullable = false)
     private School school;
 
     @Column(name = "date", nullable = false)
@@ -27,5 +27,11 @@ public class SchoolMeal {
     @Column(name = "meal", nullable = false)
     @Enumerated(EnumType.STRING)
     private Meal meal;
+
+    @Column(name = "menu", nullable = false)
+    private String menu;
+
+    @Embedded
+    private Nutrient nutrient;
 
 }
