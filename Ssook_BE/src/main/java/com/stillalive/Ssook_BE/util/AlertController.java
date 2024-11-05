@@ -3,8 +3,12 @@ package com.stillalive.Ssook_BE.util;
 
 import com.stillalive.Ssook_BE.common.ApiResponse;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
+import com.stillalive.Ssook_BE.user.repository.ParentRepository;
+import com.stillalive.Ssook_BE.user.service.ChildService;
+import com.stillalive.Ssook_BE.user.service.ParentService;
 import com.stillalive.Ssook_BE.util.alert.AlertService;
 import com.stillalive.Ssook_BE.util.alert.dto.AlertDto;
+import com.stillalive.Ssook_BE.util.alert.dto.ConnectAlertReqDto;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,9 +29,8 @@ public class AlertController {
 
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary = "알림 구독", description = "사용자의 실시간 알림을 구독하는 API")
-    public Flux<AlertDto> getUserAlerts(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        int userId = userDetails.isParent() ? userDetails.getParentId() : userDetails.getChildId();
-        return alertService.getAlertsForUser(userId);
+    public Flux<AlertDto> getUserAlerts(@RequestParam int userId, @RequestParam boolean isParent) {
+        return alertService.getAlertsForUser(userId, isParent);
     }
 
     @GetMapping("/list")

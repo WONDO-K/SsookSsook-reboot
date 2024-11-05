@@ -4,6 +4,7 @@ import com.stillalive.Ssook_BE.domain.Alert;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.ParentRepository;
 import com.stillalive.Ssook_BE.util.alert.dto.AlertDto;
+import com.stillalive.Ssook_BE.util.alert.dto.ConnectAlertReqDto;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +30,19 @@ public class AlertServiceImpl implements AlertService {
     private final ChildRepository childRepository;
 
     @Override
-    public Flux<AlertDto> getAlertsForUser(int userId) {
+    public Flux<AlertDto> getAlertsForUser(int userId, boolean isParent) {
+        // 사용자별로 Sinks가 없으면 생성
         userAlerts.putIfAbsent(userId, Sinks.many().multicast().onBackpressureBuffer());
-        log.info("User {}의 실시간 알림 스트림 요청됨.", userId);
-        return userAlerts.get(userId).asFlux().delayElements(Duration.ofMillis(500));
+
+        // userId와 senderIsParent 조건에 맞는 알림 필터링
+        // !isParent가 true이면(부모이면) senderIsParent는 false인 알림만 불러온다(자식이 보낸)
+        // !isParent가 false이면(자식이면) senderIsParent는 true인 알림만 불러온다(부모가 보낸)
+        List<Alert> alerts = alertRepository.findByReceiverIdAndSenderIsParent(userId, !isParent);
+
+        // 필터링된 알림을 Flux로 변환하여 반환
+        return Flux.fromIterable(alerts)
+                .map(AlertDto::toDto) // 변환 메서드 사용
+                .delayElements(Duration.ofMillis(500));
     }
 
     @Override
