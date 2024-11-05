@@ -18,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/alerts")
+@RequestMapping("/api/v1/alerts")
 public class AlertController {
 
     private final AlertService alertService;
