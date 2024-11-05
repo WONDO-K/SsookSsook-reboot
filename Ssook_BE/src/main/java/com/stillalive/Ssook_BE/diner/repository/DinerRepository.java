@@ -4,6 +4,11 @@ import com.stillalive.Ssook_BE.domain.Diner;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+
 @Repository
 public interface DinerRepository extends JpaRepository<Diner, Integer> {
+    Collection<Diner> findAllByIsAngelTrue();
+
+    Integer countAllByIsAngelTrue();
 }
