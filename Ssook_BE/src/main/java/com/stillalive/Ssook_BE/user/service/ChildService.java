@@ -79,12 +79,7 @@ public class ChildService {
     }
 
     public boolean existsByLoginId(String loginId) {
-        boolean result = childRepository.existsByLoginId(loginId);
-        if (result) {
-            // 이미 존재하는 로그인 아이디
-            throw new SsookException(ErrorCode.DUPLICATE_LOGIN_ID);
-        }
-        return result;
+        return childRepository.existsByLoginId(loginId);
     }
 
     // 가족 신청 목록 조회
@@ -159,5 +154,23 @@ public class ChildService {
         );
 
         log.info("포인트 요청 알림 전송 완료 - 부모 ID: {}, 자녀 ID: {}", parent.getParentId(), child.getChildId());
+    }
+
+    public UserInfoResDto getUserInfo(String loginId) {
+        Child child = childRepository.findByLoginId(loginId).orElseThrow(() -> {
+            throw new SsookException(ErrorCode.NOT_FOUND_CHILD);
+        });
+
+        return UserInfoResDto.builder()
+                .userId(child.getChildId())
+                .name(child.getName())
+                .tel(child.getTel())
+                .bday(child.getBday())
+                .gender(child.getGender())
+                .loginId(child.getLoginId())
+                .createdAt(child.getCreatedAt())
+                .updatedAt(child.getUpdatedAt())
+                .isParent(false)
+                .build();
     }
 }

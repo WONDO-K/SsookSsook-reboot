@@ -71,12 +71,7 @@ public class ParentService {
 
     // 아이디 중복 체크
     public boolean existsByLoginId(String loginId) {
-        boolean result = parentRepository.existsByLoginId(loginId);
-        if (result) {
-            // 이미 존재하는 아이디 예외발생
-            throw new SsookException(ErrorCode.DUPLICATE_LOGIN_ID);
-        }
-        return result;
+        return parentRepository.existsByLoginId(loginId);
     }
 
     @Transactional
@@ -188,4 +183,22 @@ public class ParentService {
             throw new IllegalArgumentException("포인트 잔액이 부족합니다.");
         }
     }
+
+    public UserInfoResDto getUserInfo(String loginId) {
+        Parent parent = parentRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_PARENT));
+
+        return UserInfoResDto.builder()
+                .userId(parent.getParentId())
+                .name(parent.getName())
+                .tel(parent.getTel())
+                .bday(parent.getBday())
+                .gender(parent.getGender())
+                .loginId(parent.getLoginId())
+                .createdAt(parent.getCreatedAt())
+                .updatedAt(parent.getUpdatedAt())
+                .isParent(true)
+                .build();
+    }
+
 }
