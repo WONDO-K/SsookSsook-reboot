@@ -25,6 +25,9 @@ public class Alert {
     private int senderId; // 알림을 보낸 사용자 ID (부모 혹은 자식)
 
     @Column(nullable = false)
+    private boolean senderIsParent; // 알림을 보낸 사용자가 부모인지 여부
+
+    @Column(nullable = false)
     private int receiverId; // 알림을 받을 사용자 ID (부모 혹은 자식)
 
     @Column(nullable = false)

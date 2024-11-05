@@ -27,4 +27,6 @@ public interface AlertRepository extends JpaRepository<Alert, Integer> {
 
     // 자식 ID로 읽지 않은 알림 조회
     List<Alert> findAllBySenderIdAndIsReadFalse(int senderId);
+
+    List<Alert> findByReceiverIdAndSenderIsParent(int userId, boolean b);
 }
