@@ -68,20 +68,25 @@ public class AlertServiceImpl implements AlertService {
                 .isRead(false)
                 .senderIsParent(alertDto.isSenderIsParent())
                 .build();
-        alertRepository.save(alert);
-        log.info("데이터베이스에 알림 저장: {}", alert);
-        log.info("데이터베이스에 저장된 Alert 엔티티 - senderIsParent 값: {}", alert.isSenderIsParent());
 
+        // 데이터베이스에 저장하여 ID가 자동 생성되도록 함
+        Alert savedAlert = alertRepository.save(alert);
+        log.info("데이터베이스에 알림 저장: {}", savedAlert);
+        log.info("데이터베이스에 저장된 Alert 엔티티 - senderIsParent 값: {}", savedAlert.isSenderIsParent());
 
-        SseEmitter emitter = userEmitters.get(userId);
+        // 저장된 엔티티를 DTO로 변환
+        AlertDto savedAlertDto = AlertDto.toDto(savedAlert);
+
+        // SSE를 통해 실시간으로 알림 전송
+        SseEmitter emitter = userEmitters.get(savedAlert.getReceiverId());
         if (emitter != null) {
-            sendAlertToEmitter(emitter, alertDto);
+            sendAlertToEmitter(emitter, savedAlertDto);
         }
     }
 
     private void sendAlertToEmitter(SseEmitter emitter, AlertDto alertDto) {
         try {
-            emitter.send(SseEmitter.event().name("notification").data(alertDto));
+            emitter.send(SseEmitter.event().name("alerts").data(alertDto));
             log.info("실시간 알림 전송: {}", alertDto);
         } catch (IOException e) {
             log.error("SseEmitter 전송 실패", e);
