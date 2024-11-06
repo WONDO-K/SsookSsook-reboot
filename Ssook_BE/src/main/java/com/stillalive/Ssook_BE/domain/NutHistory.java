@@ -11,6 +11,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Getter
 @NoArgsConstructor
@@ -29,9 +30,11 @@ public class NutHistory extends BaseTimeEntity {
     private Child child;
 
     @Column(name = "eat_date", nullable = false)
-    private LocalDateTime eatDate;
+    @Temporal(TemporalType.DATE)
+    private Date eatDate;
 
     @Column(name = "meal", nullable = false)
+    @Enumerated(EnumType.STRING)
     private Meal meal;
 
     @Embedded
