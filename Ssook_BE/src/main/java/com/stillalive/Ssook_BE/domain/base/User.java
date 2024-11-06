@@ -38,6 +38,8 @@ public abstract class User extends BaseTimeEntity {
     @ColumnDefault("0")
     private Integer point = 0;
 
+    protected boolean isParent; // 부모 여부를 나타내는 필드
+
     // 기본 생성자
     protected User() {
         super();
