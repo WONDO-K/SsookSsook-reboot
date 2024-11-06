@@ -24,4 +24,10 @@ public class Parent extends User {
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
     private List<FamilyRelation> familyRelations = new ArrayList<>();
 
+    // 부모 클래스에서 기본값 true 설정
+    {
+        isParent = true;
+    }
+
+
 }

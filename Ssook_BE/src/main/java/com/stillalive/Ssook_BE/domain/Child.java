@@ -34,4 +34,9 @@ public class Child extends User {
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private School school;
 
+    // 자식 클래스에서 기본값 false 설정
+    {
+        isParent = false;
+    }
+
 }
