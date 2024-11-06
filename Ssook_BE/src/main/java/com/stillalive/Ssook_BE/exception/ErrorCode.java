@@ -60,6 +60,7 @@ public enum ErrorCode {
     // FamilyRelation
     NOT_FOUND_FAMILY_RELATION(HttpStatus.NOT_FOUND, "해당 가족 관계를 찾을 수 없습니다."),
     NOT_MY_FAMILY_RELATION(HttpStatus.FORBIDDEN, "본인의 가족 관계가 아닙니다."),
+    NOT_YET_ACCEPTED_FAMILY_RELATION(HttpStatus.BAD_REQUEST, "아직 수락되지 않은 가족 관계입니다."),
 
     // Diner
     DINER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 식당을 찾을 수 없습니다."),
