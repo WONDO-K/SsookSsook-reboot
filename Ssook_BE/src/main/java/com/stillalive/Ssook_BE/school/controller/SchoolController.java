@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.time.DayOfWeek;
+import java.util.List;
 
 @RestController
 @Tag(name = "School Controller", description = "학교 API")
@@ -61,6 +62,22 @@ public class SchoolController {
                         "OK",
                         "급식 메뉴 상세를 조회합니다.",
                         schoolMealDetailDto
+                )
+        );
+    }
+    
+    @Operation(summary = "학교 검색", description = "학교 리스트를 검색합니다.")
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<SchoolListResDto>>> searchSchool(@RequestParam(value = "name", required = false) String name) {
+
+        List<SchoolListResDto> schoolListResDto = schoolService.searchSchool(name);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "학교 리스트를 검색합니다.",
+                        schoolListResDto
                 )
         );
     }
