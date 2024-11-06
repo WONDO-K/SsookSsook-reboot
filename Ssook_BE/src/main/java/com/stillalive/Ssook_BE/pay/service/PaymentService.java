@@ -14,7 +14,7 @@ public interface PaymentService {
 
     void registerCard(RegisterCardReqDto dto, int childId);
 
-    PointBalanceResDto getPointBalance(int childId);
+    PointBalanceResDto getPointBalance(int userId, boolean isChild);
 
     List<ChildHistoryResDto> getPaymentList(int childId, Integer months);
 

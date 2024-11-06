@@ -2,24 +2,16 @@ package com.stillalive.Ssook_BE.util;
 
 
 import com.stillalive.Ssook_BE.common.ApiResponse;
-import com.stillalive.Ssook_BE.exception.ErrorCode;
-import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
-import com.stillalive.Ssook_BE.user.repository.ParentRepository;
-import com.stillalive.Ssook_BE.user.service.ChildService;
-import com.stillalive.Ssook_BE.user.service.ParentService;
 import com.stillalive.Ssook_BE.util.alert.AlertService;
 import com.stillalive.Ssook_BE.util.alert.dto.AlertDto;
-import com.stillalive.Ssook_BE.util.alert.dto.ConnectAlertReqDto;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.logging.Logger;
