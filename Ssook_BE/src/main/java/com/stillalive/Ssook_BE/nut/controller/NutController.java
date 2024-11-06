@@ -8,6 +8,7 @@ import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.nut.dto.DayIntakeNutResDto;
 import com.stillalive.Ssook_BE.nut.dto.IntakeNutResDto;
+import com.stillalive.Ssook_BE.nut.dto.WeekIntakeNutResDto;
 import com.stillalive.Ssook_BE.nut.service.NutService;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
 import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
@@ -124,6 +125,55 @@ public class NutController {
                         "OK",
                         "부모의 자녀 하루 누적 영양섭취 조회가 완료되었습니다.",
                         dayIntakeNutResDto
+                )
+        );
+    }
+
+    @Operation(summary = "자녀 본인 주간 누적 영양섭취 조회", description = "자녀 본인 주간 누적 영양섭취 조회")
+    @GetMapping("/week")
+    public ResponseEntity<ApiResponse<WeekIntakeNutResDto>> getWeeklyIntakeNut(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestParam(value = "date", required = false) String dateStr) {
+
+        Integer childId = customUserDetails.getChildId();
+
+        LocalDate localDate = (dateStr != null) ? LocalDate.parse(dateStr) : LocalDate.now();
+
+        WeekIntakeNutResDto weekIntakeNutResDto = nutService.getWeeklyIntakeNut(childId, localDate);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "자녀 본인의 주간 누적 영양섭취 조회가 완료되었습니다.",
+                        weekIntakeNutResDto
+                )
+        );
+    }
+
+    @Operation(summary = "부모의 자녀 주간 누적 영양섭취 조회", description = "부모의 자녀 주간 누적 영양섭취 조회")
+    @GetMapping("/week/{childId}")
+    public ResponseEntity<ApiResponse<WeekIntakeNutResDto>> getWeeklyIntakeNutByParent(@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable Integer childId, @RequestParam(value = "date", required = false) String dateStr) {
+
+        // 본인의 자녀인지 확인
+        Integer parentId = customUserDetails.getParentId();
+
+        FamilyRelation familyRelation = familyRelationRepository.findByParent_ParentIdAndChild_ChildId(parentId, childId)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_FAMILY_RELATION));
+
+        if (familyRelation.getStatus() != Progress.YES) {
+            throw new SsookException(ErrorCode.NOT_YET_ACCEPTED_FAMILY_RELATION);
+        }
+
+        LocalDate localDate = (dateStr != null) ? LocalDate.parse(dateStr) : LocalDate.now();
+        Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        WeekIntakeNutResDto weekIntakeNutResDto = nutService.getWeeklyIntakeNut(childId, localDate);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "부모의 자녀 주간 누적 영양섭취 조회가 완료되었습니다.",
+                        weekIntakeNutResDto
                 )
         );
     }

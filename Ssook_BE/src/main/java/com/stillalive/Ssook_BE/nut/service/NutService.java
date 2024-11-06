@@ -6,6 +6,7 @@ import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.nut.dto.DayIntakeNutResDto;
 import com.stillalive.Ssook_BE.nut.dto.IntakeNutResDto;
+import com.stillalive.Ssook_BE.nut.dto.WeekIntakeNutResDto;
 import com.stillalive.Ssook_BE.nut.repository.NutHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.catalina.authenticator.SingleSignOnSessionKey;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.temporal.WeekFields;
 import java.util.Date;
 import java.util.List;
 
@@ -95,6 +97,54 @@ public class NutService {
                 .build();
     }
 
+    // 자녀 주간 누적 섭취량 조회
+    @Transactional(readOnly = true)
+    public WeekIntakeNutResDto getWeeklyIntakeNut(Integer childId, LocalDate date) {
+        // 주간 누적 섭취량 조회
+        List<NutHistory> nutHistories = nutHistoryRepository.findAllByChild_ChildIdAndEatDateBetween(childId, date.minusDays(6), date)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_NUT_HISTORY));
 
+        // 주간 누적 섭취량 계산
+        Float weeklyCal = 0f;
+        Float weeklyCarb = 0f;
+        Float weeklyProtein = 0f;
+        Float weeklyFat = 0f;
+        Float weeklyVitA = 0f;
+        Float weeklyVitC = 0f;
+        Float weeklyRibof = 0f;
+        Float weeklyThiam = 0f;
+        Float weeklyIron = 0f;
+        Float weeklyCalcium = 0f;
+
+        for (NutHistory nutHistory : nutHistories) {
+            weeklyCal += nutHistory.getNutrient().getCal() == null ? 0 : nutHistory.getNutrient().getCal();
+            weeklyCarb += nutHistory.getNutrient().getCarb() == null ? 0 : nutHistory.getNutrient().getCarb();
+            weeklyProtein += nutHistory.getNutrient().getProtein() == null ? 0 : nutHistory.getNutrient().getProtein();
+            weeklyFat += nutHistory.getNutrient().getFat() == null ? 0 : nutHistory.getNutrient().getFat();
+            weeklyVitA += nutHistory.getNutrient().getVitA() == null ? 0 : nutHistory.getNutrient().getVitA();
+            weeklyVitC += nutHistory.getNutrient().getVitC() == null ? 0 : nutHistory.getNutrient().getVitC();
+            weeklyRibof += nutHistory.getNutrient().getRibof() == null ? 0 : nutHistory.getNutrient().getRibof();
+            weeklyThiam += nutHistory.getNutrient().getThiam() == null ? 0 : nutHistory.getNutrient().getThiam();
+            weeklyIron += nutHistory.getNutrient().getIron() == null ? 0 : nutHistory.getNutrient().getIron();
+            weeklyCalcium += nutHistory.getNutrient().getCalcium() == null ? 0 : nutHistory.getNutrient().getCalcium();
+        }
+
+        return WeekIntakeNutResDto.builder()
+                .childId(childId)
+                .year(date.getYear())
+                .month(date.getMonthValue())
+                .weekOfMonth(date.get(WeekFields.ISO.weekOfMonth()))
+                .cal(weeklyCal)
+                .carb(weeklyCarb)
+                .protein(weeklyProtein)
+                .fat(weeklyFat)
+                .vitA(weeklyVitA)
+                .vitC(weeklyVitC)
+                .ribof(weeklyRibof)
+                .thiam(weeklyThiam)
+                .iron(weeklyIron)
+                .calcium(weeklyCalcium)
+                .build();
+    }
 
 }
