@@ -5,6 +5,9 @@ server:
         encoding:
             force-response: true
 
+    tomcat:
+        connection-timeout: 60s  # 예: 60초로 설정
+
 spring:
     application:
         name: Ssook_BE

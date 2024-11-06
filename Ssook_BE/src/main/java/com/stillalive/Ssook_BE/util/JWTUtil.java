@@ -1,6 +1,9 @@
 package com.stillalive.Ssook_BE.util;
 
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -57,5 +60,4 @@ public class JWTUtil {
                 .signWith(secretKey)
                 .compact();
     }
-
 }
