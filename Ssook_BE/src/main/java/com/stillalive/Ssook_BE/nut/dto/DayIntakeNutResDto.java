@@ -1,18 +1,18 @@
 package com.stillalive.Ssook_BE.nut.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Getter
 @Builder
-public class IntakeNutResDto {
+public class DayIntakeNutResDto {
 
-    private final Integer nutHistoryId;
     private final Integer childId;
-    private final Date eatDate;
-    private final String mealTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private final LocalDate eatDate;
 
     // 영양소
     private final Float cal;
