@@ -65,7 +65,10 @@ public enum ErrorCode {
     DINER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 식당을 찾을 수 없습니다."),
 
     // School
-    NOT_FOUND_SCHOOL_MEAL(HttpStatus.NOT_FOUND, "해당 급식을 찾을 수 없습니다.");
+    NOT_FOUND_SCHOOL_MEAL(HttpStatus.NOT_FOUND, "해당 급식을 찾을 수 없습니다."),
+
+    // Nut
+    NOT_FOUND_NUT_HISTORY(HttpStatus.NOT_FOUND, "해당 영양 섭취 기록을 찾을 수 없습니다.")
 
 
     ;
