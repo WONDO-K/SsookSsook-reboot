@@ -48,9 +48,16 @@ public class PayController {
     @GetMapping("/point/balance")
     @Operation(summary = "포인트 조회", description = "포인트 조회 API")
     public ResponseEntity<ApiResponse<?>> getPointBalance(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        int userId;
+        boolean isChild = userDetails.isChild();
 
-        int childId = userDetails.getChildId();
-        PointBalanceResDto dto = paymentService.getPointBalance(childId);
+        if (!isChild) {
+            userId = userDetails.getParentId();
+        } else {
+            userId = userDetails.getChildId();
+        }
+
+        PointBalanceResDto dto = paymentService.getPointBalance(userId,isChild);
 
         String message = "포인트 잔액은 " + dto.getPointBalance() + " 원 입니다";
 
@@ -100,7 +107,7 @@ public class PayController {
     @Operation(summary = "거래내역 리스트 조회", description = "거래내역 리스트 조회 API")
     public ResponseEntity<ApiResponse<?>> getPaymentList(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam(required = false) Integer months) {
+            @RequestParam(value = "months", required = false) Integer months) {
 
         int childId = userDetails.getChildId();
         List<ChildHistoryResDto> paymentList = paymentService.getPaymentList(childId, months);
@@ -113,22 +120,26 @@ public class PayController {
      * */
     @GetMapping("/detail/{historyId}")
     @Operation(summary = "거래내역 상세 조회", description = "거래내역 상세 조회 API")
-    public ResponseEntity<ApiResponse<?>>  getPaymentDetail(
+    public ResponseEntity<ApiResponse<?>> getPaymentDetail(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable int historyId) {
+            @PathVariable(value = "historyId") int historyId) {
 
-        String loginId = userDetails.getUsername();
-        int userId ;
+        int userId;
         boolean isChild = userDetails.isChild();
-        //boolean isChild = childRepository.existsByLoginId(loginId);
-        if (isChild){
+
+        if (isChild) {
             userId = userDetails.getChildId();
         } else {
             userId = userDetails.getParentId();
         }
+
+        // 거래 내역 상세 조회를 위한 서비스 호출
         ChildHistory paymentDetail = paymentService.getPaymentDetail(userId, historyId);
 
-        return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "거래내역 상세 조회 성공", paymentDetail));
+        // ChildHistory 객체를 ChildHistoryResDto로 변환
+        ChildHistoryResDto paymentDetailDto = ChildHistoryResDto.toDto(paymentDetail);
+
+        return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "거래내역 상세 조회 성공", paymentDetailDto));
     }
 
     @PostMapping("/kakaopay/success")

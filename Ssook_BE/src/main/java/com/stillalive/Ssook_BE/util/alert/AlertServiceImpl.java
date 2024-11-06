@@ -4,17 +4,13 @@ import com.stillalive.Ssook_BE.domain.Alert;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.ParentRepository;
 import com.stillalive.Ssook_BE.util.alert.dto.AlertDto;
-import com.stillalive.Ssook_BE.util.alert.dto.ConnectAlertReqDto;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

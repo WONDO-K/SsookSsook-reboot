@@ -160,10 +160,17 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public PointBalanceResDto getPointBalance(int childId) {
-        Child child = childRepository.findById(childId)
-                .orElseThrow(() -> new SsookException(ErrorCode.USER_NOT_FOUND));
-        return PointBalanceResDto.builder().pointBalance(child.getPoint()).build();
+    public PointBalanceResDto getPointBalance(int childId, boolean isChild) {
+
+        if (isChild) {
+            Child child = childRepository.findById(childId)
+                    .orElseThrow(() -> new SsookException(ErrorCode.USER_NOT_FOUND));
+            return PointBalanceResDto.builder().pointBalance(child.getPoint()).build();
+        } else {
+            Parent parent = parentRepository.findById(childId)
+                    .orElseThrow(() -> new SsookException(ErrorCode.USER_NOT_FOUND));
+            return PointBalanceResDto.builder().pointBalance(parent.getPoint()).build();
+        }
     }
 
 
