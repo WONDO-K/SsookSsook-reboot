@@ -9,9 +9,11 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -24,26 +26,36 @@ public class AlertServiceImpl implements AlertService {
 
     private static final Logger log = LoggerFactory.getLogger(AlertServiceImpl.class);
 
-    private final Map<Integer, Sinks.Many<AlertDto>> userAlerts = new ConcurrentHashMap<>();
+    private final Map<Integer, SseEmitter> userEmitters = new ConcurrentHashMap<>();
     private final AlertRepository alertRepository;
     private final ParentRepository parentRepository;
     private final ChildRepository childRepository;
 
     @Override
-    public Flux<AlertDto> getAlertsForUser(int userId, boolean isParent) {
-        // 사용자별로 Sinks가 없으면 생성
-        userAlerts.putIfAbsent(userId, Sinks.many().multicast().onBackpressureBuffer());
+    public SseEmitter getAlertsForUser(int userId, boolean isParent) {
+        log.info("subscribeToRealtimeAlerts 호출됨 - userId: {}, isParent: {}", userId, isParent);
 
-        // userId와 senderIsParent 조건에 맞는 알림 필터링
-        // !isParent가 true이면(부모이면) senderIsParent는 false인 알림만 불러온다(자식이 보낸)
-        // !isParent가 false이면(자식이면) senderIsParent는 true인 알림만 불러온다(부모가 보낸)
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+        userEmitters.put(userId, emitter);
+
+        emitter.onCompletion(() -> {
+            log.info("SseEmitter 완료 - userId: {}", userId);
+            userEmitters.remove(userId);
+        });
+
+        emitter.onTimeout(() -> {
+            log.info("SseEmitter 타임아웃 - userId: {}", userId);
+            emitter.complete();
+            userEmitters.remove(userId);
+        });
+
+        // 초기 알림을 가져와 클라이언트에 전송
         List<Alert> alerts = alertRepository.findByReceiverIdAndSenderIsParent(userId, !isParent);
+        alerts.forEach(alert -> sendAlertToEmitter(emitter, AlertDto.toDto(alert)));
 
-        // 필터링된 알림을 Flux로 변환하여 반환
-        return Flux.fromIterable(alerts)
-                .map(AlertDto::toDto) // 변환 메서드 사용
-                .delayElements(Duration.ofMillis(500));
+        return emitter;
     }
+
 
     @Override
     public void sendAlert(int userId, AlertDto alertDto) {
@@ -54,15 +66,27 @@ public class AlertServiceImpl implements AlertService {
                 .message(alertDto.getMessage())
                 .timestamp(alertDto.getTimestamp())
                 .isRead(false)
+                .senderIsParent(alertDto.isSenderIsParent())
                 .build();
         alertRepository.save(alert);
         log.info("데이터베이스에 알림 저장: {}", alert);
+        log.info("데이터베이스에 저장된 Alert 엔티티 - senderIsParent 값: {}", alert.isSenderIsParent());
 
-        userAlerts.computeIfPresent(userId, (id, sink) -> {
-            sink.tryEmitNext(alertDto);
-            return sink;
-        });
-        log.info("사용자 {}에게 알림 전송됨: {}", userId, alertDto);
+
+        SseEmitter emitter = userEmitters.get(userId);
+        if (emitter != null) {
+            sendAlertToEmitter(emitter, alertDto);
+        }
+    }
+
+    private void sendAlertToEmitter(SseEmitter emitter, AlertDto alertDto) {
+        try {
+            emitter.send(SseEmitter.event().name("notification").data(alertDto));
+            log.info("실시간 알림 전송: {}", alertDto);
+        } catch (IOException e) {
+            log.error("SseEmitter 전송 실패", e);
+            emitter.completeWithError(e);
+        }
     }
 
     @Override

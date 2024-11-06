@@ -2,6 +2,8 @@ package com.stillalive.Ssook_BE.util;
 
 
 import com.stillalive.Ssook_BE.common.ApiResponse;
+import com.stillalive.Ssook_BE.exception.ErrorCode;
+import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
 import com.stillalive.Ssook_BE.user.repository.ParentRepository;
 import com.stillalive.Ssook_BE.user.service.ChildService;
@@ -16,9 +18,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,10 +30,15 @@ import java.util.List;
 public class AlertController {
 
     private final AlertService alertService;
+    private final JWTUtil jwtUtil;
+    private final Logger log = Logger.getLogger(AlertController.class.getName());
 
-    @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "/subscribe")
     @Operation(summary = "알림 구독", description = "사용자의 실시간 알림을 구독하는 API")
-    public Flux<AlertDto> getUserAlerts(@RequestParam int userId, @RequestParam boolean isParent) {
+    public SseEmitter subscribeToAlerts(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        int userId = userDetails.isParent() ? userDetails.getParentId() : userDetails.getChildId();
+        boolean isParent = userDetails.isParent();
+        log.info("알림 구독 요청 - userId: " + userId + ", isParent: " + isParent);
         return alertService.getAlertsForUser(userId, isParent);
     }
 

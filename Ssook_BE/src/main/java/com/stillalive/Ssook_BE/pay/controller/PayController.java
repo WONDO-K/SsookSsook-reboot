@@ -119,7 +119,8 @@ public class PayController {
 
         String loginId = userDetails.getUsername();
         int userId ;
-        boolean isChild = childRepository.existsByLoginId(loginId);
+        boolean isChild = userDetails.isChild();
+        //boolean isChild = childRepository.existsByLoginId(loginId);
         if (isChild){
             userId = userDetails.getChildId();
         } else {
