@@ -22,8 +22,8 @@ public class PaymentReqDto {
     @NotNull(message = "식당 ID는 필수입니다.")
     private int dinerId;
 
-    @NotNull(message = "결제 금액은 필수입니다.")
-    @Min(value = 0, message = "결제 금액은 0원 이상이어야 합니다.")  // `Min`을 사용하여 0 이상의 정수만 허용
+    @NotNull(message = "총 결제 금액은 필수입니다.")
+    @Min(value = 0, message = "총 결제 금액은 0원 이상이어야 합니다.")  // `Min`을 사용하여 0 이상의 정수만 허용
     private int amount;
 
     @NotNull(message = "주문한 메뉴는 필수입니다.")
@@ -37,7 +37,8 @@ public class PaymentReqDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class PayDetailDto {
-        private String menuName;
-        private Integer quantity;
+        private String menuName; // 메뉴 이름
+        private Integer quantity; // 메뉴 주문 수량
+        private Integer price; // 메뉴 개별 가격
     }
 }

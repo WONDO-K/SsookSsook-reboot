@@ -1,5 +1,6 @@
 package com.stillalive.Ssook_BE.pay.service;
 
+import com.stillalive.Ssook_BE.domain.Child;
 import com.stillalive.Ssook_BE.domain.ChildHistory;
 import com.stillalive.Ssook_BE.pay.dto.*;
 import org.springframework.security.core.Authentication;
@@ -8,7 +9,7 @@ import java.util.List;
 
 public interface PaymentService {
 
-    void processPayment(PaymentReqDto paymentReqDto);
+    void processPayment(PaymentReqDto paymentReqDto, Child child);
 
     MyCardResDto getMyCard(int childId);
 
@@ -24,4 +25,5 @@ public interface PaymentService {
 
     void chargePoint(ChargePointReqDto dto);
 
+    void changeCard(RegisterCardReqDto dto, int childId);
 }

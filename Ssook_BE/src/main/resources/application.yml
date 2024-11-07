@@ -70,6 +70,24 @@ spring:
     jwt:
         secret: ${JWT_SECRET}  # ?? ??? ??
 
+
+    quartz:
+        job-store-type: jdbc
+        jdbc:
+            initialize-schema: always
+        properties:
+            org:
+                quartz:
+                    scheduler:
+                        instanceName: BalanceScheduler
+                    jobStore:
+                        class: org.quartz.impl.jdbcjobstore.JobStoreTX
+                        driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+                        tablePrefix: QRTZ_
+
+                    threadPool:
+                        threadCount: 5
+
 # Swagger Configuration
 springdoc:
     api-docs:
