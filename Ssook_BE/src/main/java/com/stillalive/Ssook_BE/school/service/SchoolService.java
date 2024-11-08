@@ -1,14 +1,22 @@
 package com.stillalive.Ssook_BE.school.service;
 
+import com.stillalive.Ssook_BE.domain.Child;
+import com.stillalive.Ssook_BE.domain.ChildSchoolMeal;
 import com.stillalive.Ssook_BE.domain.SchoolMeal;
+import com.stillalive.Ssook_BE.enums.Meal;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.school.dto.SchoolListResDto;
 import com.stillalive.Ssook_BE.school.dto.SchoolMealDetailDto;
 import com.stillalive.Ssook_BE.school.dto.SchoolMealListResDto;
 import com.stillalive.Ssook_BE.school.repository.SchoolMealRepository;
+import com.stillalive.Ssook_BE.school.repository.ChildSchoolMealRepository;
+import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -19,7 +27,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SchoolService {
 
+    private static final Logger log = LoggerFactory.getLogger(SchoolService.class);
     private final SchoolMealRepository schoolMealRepository;
+    private final ChildRepository childRepository;
+    private final ChildSchoolMealRepository childSchoolMealRepository;
 
     // 주간 급식 리스트 조회
     public SchoolMealListResDto getSchoolMealList(Integer schoolCode, LocalDate startOfWeek, LocalDate endOfWeek) {
@@ -114,5 +125,33 @@ public class SchoolService {
 
         // 최대 5개의 결과만 반환
         return result.stream().limit(10).collect(Collectors.toList());
+    }
+
+    // 자녀가 해당일 점심을 먹음, 영양소 증가
+    public void eatLunch(Integer childId, Date date) {
+
+        // 자녀
+        Child child = childRepository.findById(childId)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_CHILD));
+
+        // 학교코드
+        Integer schoolCode = child.getSchool().getCode();
+
+        log.info("childId: {}, schoolCode: {}, date: {}", childId, schoolCode, date);
+
+        // 해당일의 급식 ID 조회
+        SchoolMeal schoolMeal = schoolMealRepository.findSchoolMealIdBySchoolCodeAndDateAndMeal(schoolCode, date, Meal.LUNCH)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_SCHOOL_MEAL));
+
+        // 자녀가 해당일 점심을 먹음
+        childSchoolMealRepository.save(ChildSchoolMeal.builder()
+                .child(child)
+                .schoolMeal(schoolMeal)
+                .isEaten(true)
+                .build());
+
+        // TODO(chabs) 영양소 증가
+//        child.addNutrient(schoolMeal.getNutrient());
+
     }
 }

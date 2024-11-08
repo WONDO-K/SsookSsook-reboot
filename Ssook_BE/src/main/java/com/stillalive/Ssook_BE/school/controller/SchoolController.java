@@ -7,6 +7,9 @@ import com.stillalive.Ssook_BE.user.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SchoolController {
 
+    private static final Logger log = LoggerFactory.getLogger(SchoolController.class);
     private final SchoolService schoolService;
 
     @Operation(summary = "주간 급식 메뉴 조회", description = "주간 급식 메뉴를 조회합니다.")
@@ -85,11 +89,19 @@ public class SchoolController {
 
     @Operation(summary = "자녀가 해당일 점심을 먹음. 영양소 증가", description = "자녀가 해당일 점심을 먹음. 영양소 증가")
     @PostMapping("/lunch")
-    public ResponseEntity<ApiResponse<Void>> eatLunch(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestParam Date date) {
+    public ResponseEntity<ApiResponse<Void>> eatLunch(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date) {
 
         Integer childId = customUserDetails.getChildId();
+        
+        // 안돼서 임시로 // TODO(chabs)  // api 명세서 쓰기
+        childId = (childId != null) ? childId : 3;    // 없으면 1번 자녀
+
+        date = (date != null) ? date : new Date();    // 없으면 오늘 날짜
+
+        log.info(childId + " 자녀가 " + date + "에 점심을 먹음. 영양소 증가");
 
         schoolService.eatLunch(childId, date);
+
 
         return ResponseEntity.ok(
                 ApiResponse.of(
