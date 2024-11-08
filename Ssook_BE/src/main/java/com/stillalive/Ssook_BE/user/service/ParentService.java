@@ -51,12 +51,13 @@ public class ParentService {
         String password = parentSignupReqDto.getPassword();
 
         // 아이디 중복 체크
-        if (existsByLoginId(loginId)) {
+        if (existsByLoginId(loginId) || childRepository.existsByLoginId(loginId)) {
             throw new SsookException(ErrorCode.DUPLICATE_LOGIN_ID);
         }
 
+
         // 전화번호 중복 체크
-        if (parentRepository.existsByTel(tel)) {
+        if (parentRepository.existsByTel(tel) || childRepository.existsByTel(tel)) {
             throw new SsookException(ErrorCode.DUPLICATE_TEL);
         }
 
