@@ -54,7 +54,7 @@ public class DinerController {
     @Operation(summary = "주변 식당 목록 조회", description = "주변 식당 목록을 조회합니다.")
     @GetMapping("/nearby")
     public ResponseEntity<ApiResponse<DinerListResDto>> getNearbyDiners(@AuthenticationPrincipal CustomUserDetails customUserDetails
-            , @RequestParam Float lat, @RequestParam Float lng, @RequestParam Float range) {
+            , @RequestParam Double lat, @RequestParam Double lng, @RequestParam Float range) {
 
         NearbyDinerResDto nearbyDinerResDto = new NearbyDinerResDto(lat, lng, range);
 

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class NearbyDinerResDto
 {
-    private Float lat;
-    private Float lng;
+    private Double lat;
+    private Double lng;
     private Float range;    // km 단위
 }

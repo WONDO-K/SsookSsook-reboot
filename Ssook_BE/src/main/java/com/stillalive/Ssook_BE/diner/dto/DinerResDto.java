@@ -9,8 +9,8 @@ public class DinerResDto {
     private Integer dinerId;
     private String name;
     private String address;
-    private float lat;
-    private float lng;
+    private Double lat;
+    private Double lng;
     private String tel;
     private Boolean isAngel;
 }

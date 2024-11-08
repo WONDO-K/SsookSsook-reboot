@@ -30,10 +30,10 @@ public class Diner {
     private String address;
 
     @Column(name = "lat", nullable = false)
-    private Float lat;
+    private Double lat;
 
     @Column(name = "lng", nullable = false)
-    private Float lng;
+    private Double lng;
 
     @Column(name = "tel")
     private String tel;
