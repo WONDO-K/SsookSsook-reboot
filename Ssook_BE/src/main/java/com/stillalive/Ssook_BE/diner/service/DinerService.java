@@ -40,8 +40,8 @@ public class DinerService {
 
 
     public DinerListResDto getNearbyDiners(NearbyDinerResDto nearbyDinerResDto) {
-        Float lat = nearbyDinerResDto.getLat();
-        Float lng = nearbyDinerResDto.getLng();
+        Double lat = nearbyDinerResDto.getLat();
+        Double lng = nearbyDinerResDto.getLng();
         Float range = nearbyDinerResDto.getRange();
 
         return DinerListResDto.builder()

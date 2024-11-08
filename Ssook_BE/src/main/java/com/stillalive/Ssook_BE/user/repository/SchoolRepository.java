@@ -1,4 +1,4 @@
-package com.stillalive.Ssook_BE.user.service;
+package com.stillalive.Ssook_BE.user.repository;
 
 import com.stillalive.Ssook_BE.domain.School;
 import org.springframework.data.jpa.repository.JpaRepository;

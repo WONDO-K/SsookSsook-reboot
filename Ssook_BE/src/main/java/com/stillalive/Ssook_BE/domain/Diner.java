@@ -26,16 +26,16 @@ public class Diner {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "address", nullable = false)
+    @Column(name = "address")
     private String address;
 
     @Column(name = "lat", nullable = false)
-    private Float lat;
+    private Double lat;
 
     @Column(name = "lng", nullable = false)
-    private Float lng;
+    private Double lng;
 
-    @Column(name = "tel", nullable = false)
+    @Column(name = "tel")
     private String tel;
 
     @Column(name = "is_angel", nullable = false)
