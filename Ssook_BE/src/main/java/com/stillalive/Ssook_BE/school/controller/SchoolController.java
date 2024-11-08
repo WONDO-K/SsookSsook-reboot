@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.time.DayOfWeek;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -78,6 +79,24 @@ public class SchoolController {
                         "OK",
                         "학교 리스트를 검색합니다.",
                         schoolListResDto
+                )
+        );
+    }
+
+    @Operation(summary = "자녀가 해당일 점심을 먹음. 영양소 증가", description = "자녀가 해당일 점심을 먹음. 영양소 증가")
+    @PostMapping("/lunch")
+    public ResponseEntity<ApiResponse<Void>> eatLunch(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestParam Date date) {
+
+        Integer childId = customUserDetails.getChildId();
+
+        schoolService.eatLunch(childId, date);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "자녀가 해당일 점심을 먹음. 영양소 증가",
+                        null
                 )
         );
     }

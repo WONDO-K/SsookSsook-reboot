@@ -94,6 +94,8 @@ public class ParentService {
                 .status(Progress.PENDING)
                 .build());
 
+        // TODO (wondok) 자녀에게 알림 전송
+
     }
 
     public AddChildReqListResDto getReqChildList(Integer parentId) {
