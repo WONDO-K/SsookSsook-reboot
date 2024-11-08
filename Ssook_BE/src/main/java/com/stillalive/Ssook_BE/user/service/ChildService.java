@@ -13,6 +13,7 @@ import com.stillalive.Ssook_BE.user.dto.*;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
 import com.stillalive.Ssook_BE.user.repository.ParentRepository;
+import com.stillalive.Ssook_BE.user.repository.SchoolRepository;
 import com.stillalive.Ssook_BE.util.alert.AlertService;
 import com.stillalive.Ssook_BE.util.alert.dto.AlertDtoMapper;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -115,6 +115,8 @@ public class ChildService {
 
         // 가족 신청 상태 변경
         familyRelation.accept();
+
+        // TODO (wondok) 부모에게 수락 알림 전송
 
     }
 
