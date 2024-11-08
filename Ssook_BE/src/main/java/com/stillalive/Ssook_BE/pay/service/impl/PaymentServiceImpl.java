@@ -132,6 +132,8 @@ public class PaymentServiceImpl implements PaymentService {
 
         log.info("dto의 paydetails: {}", dto.getPayDetails());
 
+        // TODO: MenuNut 조회 또는 생성 (chabs)
+
         // 10. 결제 내역 저장
         ChildHistory childHistory = createHistory(dto, card, cardPrice, pointPrice);
         childHistoryRepository.save(childHistory);
