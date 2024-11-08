@@ -9,7 +9,8 @@ import com.stillalive.Ssook_BE.menu.service.MenuNutService;
 import com.stillalive.Ssook_BE.pay.dto.*;
 import com.stillalive.Ssook_BE.pay.repository.BalanceRepository;
 import com.stillalive.Ssook_BE.pay.repository.CardRepository;
-import com.stillalive.Ssook_BE.pay.repository.HistoryRepository;
+import com.stillalive.Ssook_BE.pay.repository.ChildHistoryRepository;
+import com.stillalive.Ssook_BE.pay.repository.ParentHistoryRepository;
 import com.stillalive.Ssook_BE.pay.service.PaymentService;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
@@ -34,10 +35,11 @@ public class PaymentServiceImpl implements PaymentService {
     private final CardRepository cardRepository;
     private final ChildRepository childRepository;
     private final BalanceRepository balanceRepository;
-    private final HistoryRepository historyRepository;
+    private final ChildHistoryRepository childHistoryRepository;
+    private final ParentHistoryRepository parentHistoryRepository;
+    private final ParentRepository parentRepository;
     private final FamilyRelationRepository familyRelationRepository;
     private final MenuRepository menuRepository;
-    private final ParentRepository parentRepository;
 //    private final MenuNutService menuNutService;
     private final JWTUtil jwtUtil;
 
@@ -54,14 +56,6 @@ public class PaymentServiceImpl implements PaymentService {
                     log.error("카드 정보 조회 실패 - 자녀 ID: {}", child.getChildId());
                     return new SsookException(ErrorCode.CARD_NOT_FOUND);
                 });
-
-//        // 1. 카드 유효성 검증 (카드 존재 여부)
-//        Card card = cardRepository.findById(dto.getCardId())
-//                .orElseThrow(() -> new SsookException(ErrorCode.CARD_NOT_FOUND));
-
-//        // 1. 카드 유효성 검증 (카드 존재 여부)
-//        Card card = cardRepository.findByCardToken(dto.getCardToken())
-//                .orElseThrow(() -> new SsookException(ErrorCode.CARD_NOT_FOUND));
 
         // 2. 카드 만료 여부 확인
         // 현재 날짜를 기준으로 유효기간 확인
@@ -82,7 +76,7 @@ public class PaymentServiceImpl implements PaymentService {
         if (dto.getAmount() == 0) {
             log.info("결제 금액 0원 - 잔액 확인 없이 결제 처리 진행");
             ChildHistory childHistory = createHistory(dto, card, 0, 0);
-            historyRepository.save(childHistory);
+            childHistoryRepository.save(childHistory);
             log.info("결제 내역 저장 완료 - 결제 금액: 0원");
             return;
         }
@@ -140,7 +134,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         // 10. 결제 내역 저장
         ChildHistory childHistory = createHistory(dto, card, cardPrice, pointPrice);
-        historyRepository.save(childHistory);
+        childHistoryRepository.save(childHistory);
         log.info("결제 내역 저장 완료 - 카드 사용 금액: {}, 포인트 사용 금액: {}", cardPrice, pointPrice);
     }
 
@@ -285,7 +279,7 @@ public class PaymentServiceImpl implements PaymentService {
         LocalDateTime endDate = LocalDateTime.now();
         LocalDateTime startDate = endDate.minusMonths(months).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
 
-        List<ChildHistory> histories = historyRepository.findByChildIdAndDateRange(childId, startDate, endDate);
+        List<ChildHistory> histories = childHistoryRepository.findByChildIdAndDateRange(childId, startDate, endDate);
         log.info("결제 내역 조회 완료 - 자녀 ID: {}, 내역 수: {}", childId, histories.size());
 
         return histories.stream().map(ChildHistoryResDto::toDto).collect(Collectors.toList());
@@ -296,7 +290,7 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("결제 상세 내역 조회 시작 - 사용자 ID: {}, 내역 ID: {}", userId, historyId);
 
         // 거래 내역 조회
-        ChildHistory childHistory = historyRepository.findById(historyId)
+        ChildHistory childHistory = childHistoryRepository.findById(historyId)
                 .orElseThrow(() -> {
                     log.error("거래 내역 조회 실패 - 내역 ID: {}", historyId);
                     return new SsookException(ErrorCode.HISTORY_NOT_FOUND);
@@ -365,6 +359,20 @@ public class PaymentServiceImpl implements PaymentService {
         parent.setPoint(newPointBalance);
         parentRepository.save(parent); // 충전된 포인트를 부모 계정에 저장
         log.info("포인트 충전 완료 - 부모 ID: {}, 충전 후 잔액: {}", dto.getUserId(), newPointBalance);
+
+        // 부모 내역 저장
+        saveParentHistory(parent, PayType.RECHARGE, dto.getAmount(), newPointBalance);
+    }
+
+    private void saveParentHistory(Parent parent, PayType type, int price, int balance) {
+        ParentHistory parentHistory = new ParentHistory();
+        parentHistory.setParent(parent);
+        parentHistory.setType(type);
+        parentHistory.setPrice(price);
+        parentHistory.setBalance(balance);
+        parentHistory.setCreatedAt(LocalDateTime.now());
+        parentHistoryRepository.save(parentHistory);
+        log.info("부모 내역 저장 완료 - 부모 ID: {}, 내역 ID: {}", parent.getParentId(), parentHistory.getId());
     }
 
     @Override

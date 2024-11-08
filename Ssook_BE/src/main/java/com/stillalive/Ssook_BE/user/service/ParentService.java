@@ -2,10 +2,13 @@ package com.stillalive.Ssook_BE.user.service;
 
 import com.stillalive.Ssook_BE.domain.*;
 import com.stillalive.Ssook_BE.enums.Gender;
+import com.stillalive.Ssook_BE.enums.PayType;
 import com.stillalive.Ssook_BE.enums.Progress;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
+import com.stillalive.Ssook_BE.pay.dto.ParentHistoryResDto;
 import com.stillalive.Ssook_BE.pay.repository.BalanceRepository;
+import com.stillalive.Ssook_BE.pay.repository.ParentHistoryRepository;
 import com.stillalive.Ssook_BE.user.dto.*;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,6 +42,8 @@ public class ParentService {
     private final AlertService alertService;
     private static final Logger log = LoggerFactory.getLogger(ParentService.class);
     private final BalanceRepository balanceRepository;
+
+    private final ParentHistoryRepository parentHistoryRepository;
 
 
     @Transactional
@@ -184,7 +190,23 @@ public class ParentService {
             log.error("포인트 전송 실패 - 부모 ID: {}, 잔액 부족", parent.getParentId());
             throw new IllegalArgumentException("포인트 잔액이 부족합니다.");
         }
+
+        saveParentHistory(parent, PayType.SEND, dto.getAmount(), parent.getPoint());
+
+
     }
+
+    private void saveParentHistory(Parent parent, PayType type, int price, int balance) {
+        ParentHistory parentHistory = new ParentHistory();
+        parentHistory.setParent(parent);
+        parentHistory.setType(type);
+        parentHistory.setPrice(price);
+        parentHistory.setBalance(balance);
+        parentHistory.setCreatedAt(LocalDateTime.now());
+        parentHistoryRepository.save(parentHistory);
+        log.info("부모 내역 저장 완료 - 부모 ID: {}, 내역 ID: {}", parent.getParentId(), parentHistory.getId());
+    }
+
 
     public UserInfoResDto getUserInfo(String loginId) {
         Parent parent = parentRepository.findByLoginId(loginId)
@@ -239,5 +261,21 @@ public class ParentService {
                 .childName(child.getName())
                 .balance(balance.getCurrentBalance())
                 .build();
+    }
+
+    public List<ParentHistoryResDto> getParentPaymentList(int parentId, Integer months) {
+        Parent parent = parentRepository.findById(parentId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부모 ID입니다: " + parentId));
+
+        List<ParentHistory> parentHistories;
+        if (months == null) {
+            parentHistories = parentHistoryRepository.findAllByParent(parent);
+        } else {
+            parentHistories = parentHistoryRepository.findAllByParentAndCreatedAtAfter(parent, LocalDateTime.now().minusMonths(months));
+        }
+
+        return parentHistories.stream()
+                .map(ParentHistoryResDto::toDto)
+                .collect(Collectors.toList());
     }
 }

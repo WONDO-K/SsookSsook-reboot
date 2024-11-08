@@ -26,4 +26,5 @@ public interface PaymentService {
     void chargePoint(ChargePointReqDto dto);
 
     void changeCard(RegisterCardReqDto dto, int childId);
+
 }
