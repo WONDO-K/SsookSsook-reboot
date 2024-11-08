@@ -16,9 +16,6 @@ import java.util.List;
 @Builder
 public class PaymentReqDto {
 
-    @NotNull(message = "카드 ID는 필수입니다.")
-    private int cardId;
-
     @NotNull(message = "식당 ID는 필수입니다.")
     private int dinerId;
 

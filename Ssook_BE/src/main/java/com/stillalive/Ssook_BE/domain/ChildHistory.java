@@ -19,7 +19,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "child_pay_history")
+@Entity(name = "child_history")
 @Builder
 public class ChildHistory {
 

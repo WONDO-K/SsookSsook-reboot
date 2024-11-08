@@ -1,6 +1,7 @@
 package com.stillalive.Ssook_BE.user.controller;
 
 import com.stillalive.Ssook_BE.common.ApiResponse;
+import com.stillalive.Ssook_BE.pay.dto.ParentHistoryResDto;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
 import com.stillalive.Ssook_BE.user.dto.*;
 import com.stillalive.Ssook_BE.user.service.ParentService;
@@ -9,9 +10,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @Tag(name = "Parent Controller", description = "부모 API")
@@ -29,9 +33,7 @@ public class ParentController {
 
         return ResponseEntity.ok(
                 ApiResponse.of(
-                        200,
-                        "OK",
-                        "부모 회원가입이 완료되었습니다.",
+                        HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "부모 회원가입이 완료되었습니다.",
                         null
                 )
         );
@@ -44,9 +46,7 @@ public class ParentController {
 
         return ResponseEntity.ok(
                 ApiResponse.of(
-                        200,
-                        "OK",
-                        "부모 로그인이 완료되었습니다.",
+                        HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "부모 로그인이 완료되었습니다.",
                         null
                 )
         );
@@ -58,9 +58,7 @@ public class ParentController {
 
         return ResponseEntity.ok(
                 ApiResponse.of(
-                        200,
-                        "OK",
-                        "부모 parentId를 찾았습니다.",
+                        HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "parentId를 찾았습니다.",
                         customUserDetails.getParentId()
                 )
         );
@@ -77,9 +75,7 @@ public class ParentController {
 
         return ResponseEntity.ok(
                 ApiResponse.of(
-                        200,
-                        "OK",
-                        "자녀 추가가 완료되었습니다.",
+                        HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "자녀 추가가 완료되었습니다.",
                         null
                 )
         );
@@ -95,9 +91,7 @@ public class ParentController {
 
         return ResponseEntity.ok(
                 ApiResponse.of(
-                        200,
-                        "OK",
-                        "신청한 자녀 추가 목록을 조회했습니다.",
+                        HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "신청한 자녀 추가 목록을 조회했습니다.",
                         reqChildListResDto
                 )
         );
@@ -113,15 +107,13 @@ public class ParentController {
 
         return ResponseEntity.ok(
                 ApiResponse.of(
-                        200,
-                        "OK",
-                        "자녀 목록을 조회했습니다.",
+                        HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "자녀 목록을 조회했습니다.",
                         childListResDto
                 )
         );
     }
 
-    @Operation(summary = "자녀 상세 조회", description = "자녀 상세를 조회합니다.")
+    @Operation(summary = "자녀 정보 상세 조회", description = "자녀 정보를 상세를 조회합니다.")
     @GetMapping("/child/{childId}")
     public ResponseEntity<ApiResponse<ChildResDto>> findChild(@PathVariable Integer childId) {
 
@@ -129,9 +121,7 @@ public class ParentController {
 
         return ResponseEntity.ok(
                 ApiResponse.of(
-                        200,
-                        "OK",
-                        "자세 상세를 조회했습니다.",
+                        HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "자녀 상세를 조회했습니다.",
                         childResDto
                 )
         );
@@ -147,9 +137,7 @@ public class ParentController {
 
         return ResponseEntity.ok(
                 ApiResponse.of(
-                        200,
-                        "OK",
-                        "포인트 전송이 완료되었습니다.",
+                        HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "포인트 전송이 완료되었습니다.",
                         null
                 )
         );
@@ -165,9 +153,7 @@ public class ParentController {
 
         return ResponseEntity.ok(
                 ApiResponse.of(
-                        200,
-                        "OK",
-                        "자녀의 포인트를 조회했습니다.",
+                        HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "자녀의 포인트를 조회했습니다.",
                         myChildPointResDto
                 )
         );
@@ -183,12 +169,27 @@ public class ParentController {
 
         return ResponseEntity.ok(
                 ApiResponse.of(
-                        200,
-                        "OK",
-                        "자녀의 카드 잔액을 조회했습니다.",
+                        HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "자녀의 카드 잔액을 조회했습니다.",
                         myChildBalanceResDto
                 )
         );
     }
+
+    /**
+     * 부모 거래 내역 리스트 조회
+     * */
+    @GetMapping("/history/list")
+    @Operation(summary = "부모 거래 내역 리스트 조회", description = "부모 거래 내역 리스트 조회 API")
+    public ResponseEntity<ApiResponse<?>> getParentPaymentList(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(value = "months", required = false) Integer months) {
+
+        int parentId = userDetails.getParentId();
+        List<ParentHistoryResDto> paymentList = parentService.getParentPaymentList(parentId, months);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "거래내역 조회 성공", paymentList));
+    }
+
 
 }

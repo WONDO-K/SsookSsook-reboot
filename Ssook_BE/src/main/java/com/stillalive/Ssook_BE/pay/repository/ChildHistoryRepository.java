@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface HistoryRepository extends JpaRepository<ChildHistory, Integer> {
+public interface ChildHistoryRepository extends JpaRepository<ChildHistory, Integer> {
 
-    @Query("SELECT h FROM child_pay_history h WHERE h.card.child.childId = :childId AND h.historyTime BETWEEN :startDate AND :endDate ORDER BY h.historyTime DESC")
+    @Query("SELECT h FROM child_history h WHERE h.card.child.childId = :childId AND h.historyTime BETWEEN :startDate AND :endDate ORDER BY h.historyTime DESC")
     List<ChildHistory> findByChildIdAndDateRange(@Param("childId") int childId,
                                                  @Param("startDate") LocalDateTime startDate,
                                                  @Param("endDate") LocalDateTime endDate);
