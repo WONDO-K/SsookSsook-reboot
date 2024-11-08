@@ -42,6 +42,9 @@ public class Diner {
     @ColumnDefault("false")
     private Boolean isAngel;
 
+    @Column(name = "category")
+    private String category;
+
     @OneToMany(mappedBy = "diner", fetch = FetchType.LAZY)
     private List<Menu> menus = new ArrayList<>();
 }
