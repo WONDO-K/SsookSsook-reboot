@@ -52,12 +52,12 @@ public class ChildService {
         Integer schoolId = childSignupReqDto.getSchoolId();
 
         // 아이디 중복 체크
-        if (existsByLoginId(loginId)) {
+        if (existsByLoginId(loginId) || parentRepository.existsByLoginId(loginId)) {
             throw new SsookException(ErrorCode.DUPLICATE_LOGIN_ID);
         }
 
         // 전화번호 중복 체크
-        if (childRepository.existsByTel(tel)) {
+        if (childRepository.existsByTel(tel) || parentRepository.existsByTel(tel)) {
             throw new SsookException(ErrorCode.DUPLICATE_TEL);
         }
 
