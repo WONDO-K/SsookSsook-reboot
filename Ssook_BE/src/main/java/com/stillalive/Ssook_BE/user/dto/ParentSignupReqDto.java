@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Getter
@@ -16,7 +17,7 @@ public class ParentSignupReqDto {
 
     private String name;
     private String tel;
-    private Date bday;
+    private LocalDate bday;
     private Gender gender;
     private String loginId;
     private String password;

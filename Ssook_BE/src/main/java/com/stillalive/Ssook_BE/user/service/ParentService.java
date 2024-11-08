@@ -1,12 +1,11 @@
 package com.stillalive.Ssook_BE.user.service;
 
-import com.stillalive.Ssook_BE.domain.Child;
-import com.stillalive.Ssook_BE.domain.FamilyRelation;
-import com.stillalive.Ssook_BE.domain.Parent;
+import com.stillalive.Ssook_BE.domain.*;
 import com.stillalive.Ssook_BE.enums.Gender;
 import com.stillalive.Ssook_BE.enums.Progress;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
+import com.stillalive.Ssook_BE.pay.repository.BalanceRepository;
 import com.stillalive.Ssook_BE.user.dto.*;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
@@ -20,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,6 +37,7 @@ public class ParentService {
 
     private final AlertService alertService;
     private static final Logger log = LoggerFactory.getLogger(ParentService.class);
+    private final BalanceRepository balanceRepository;
 
 
     @Transactional
@@ -44,7 +45,7 @@ public class ParentService {
 
         String name = parentSignupReqDto.getName();
         String tel = parentSignupReqDto.getTel();
-        Date bday = parentSignupReqDto.getBday();
+        LocalDate bday = parentSignupReqDto.getBday();
         Gender gender = parentSignupReqDto.getGender();
         String loginId = parentSignupReqDto.getLoginId();
         String password = parentSignupReqDto.getPassword();
@@ -201,4 +202,41 @@ public class ParentService {
                 .build();
     }
 
+    public MyChildPointResDto getMyChildPoint(Integer parentId, Integer childId) {
+        Parent parent = parentRepository.findById(parentId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부모 ID입니다: " + parentId));
+        Child child = childRepository.findById(childId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 자녀 ID입니다: " + childId));
+
+        // 부모-자식 관계 확인
+        familyRelationRepository.findByParentAndChildAndStatus(parent, child, Progress.YES)
+                .orElseThrow(() -> new IllegalStateException("부모와 자녀 관계가 존재하지 않습니다."));
+
+        return MyChildPointResDto.builder()
+                .childId(child.getChildId())
+                .childName(child.getName())
+                .point(child.getPoint())
+                .build();
+    }
+
+    public MyChildBalanceResDto getMyChildBalance(Integer parentId, Integer childId) {
+        Parent parent = parentRepository.findById(parentId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부모 ID입니다: " + parentId));
+        Child child = childRepository.findById(childId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 자녀 ID입니다: " + childId));
+
+        // 부모-자식 관계 확인
+        familyRelationRepository.findByParentAndChildAndStatus(parent, child, Progress.YES)
+                .orElseThrow(() -> new IllegalStateException("부모와 자녀 관계가 존재하지 않습니다."));
+
+        Card card = child.getCard();
+        Balance balance = balanceRepository.findByCard(card)
+                .orElseThrow(() -> new IllegalArgumentException("카드 정보가 존재하지 않습니다."));
+
+        return MyChildBalanceResDto.builder()
+                .childId(child.getChildId())
+                .childName(child.getName())
+                .balance(balance.getCurrentBalance())
+                .build();
+    }
 }

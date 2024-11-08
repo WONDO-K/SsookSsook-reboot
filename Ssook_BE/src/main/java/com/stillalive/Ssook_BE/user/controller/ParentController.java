@@ -138,9 +138,9 @@ public class ParentController {
     }
     @PostMapping("/point/transfer")
     @Operation(summary = "포인트 전송", description = "포인트를 전송합니다.")
-    public ResponseEntity<ApiResponse<Void>> transferPoint(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody PointTransferReqDto dto) {
+    public ResponseEntity<ApiResponse<Void>> transferPoint(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody PointTransferReqDto dto) {
 
-        Integer parentId = customUserDetails.getParentId();
+        Integer parentId = userDetails.getParentId();
         dto.setParentId(parentId);
 
         parentService.transferPoint(parentId, dto);
@@ -151,6 +151,42 @@ public class ParentController {
                         "OK",
                         "포인트 전송이 완료되었습니다.",
                         null
+                )
+        );
+    }
+
+    @GetMapping("/point/{childId}")
+    @Operation(summary = "자녀 포인트 조회", description = "자녀의 포인트를 조회합니다.")
+    public ResponseEntity<ApiResponse<MyChildPointResDto>> findPoint(@AuthenticationPrincipal CustomUserDetails userDetails ,@PathVariable(value = "childId") Integer childId) {
+
+        int parentId = userDetails.getParentId();
+
+        MyChildPointResDto myChildPointResDto = parentService.getMyChildPoint(parentId,childId);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "자녀의 포인트를 조회했습니다.",
+                        myChildPointResDto
+                )
+        );
+    }
+
+    @GetMapping("/balance/{childId}")
+    @Operation(summary = "자녀 카드 잔액 조회", description = "자녀의 카드 잔액를 조회합니다.")
+    public ResponseEntity<ApiResponse<MyChildBalanceResDto>> findBalance(@AuthenticationPrincipal CustomUserDetails userDetails ,@PathVariable(value = "childId") Integer childId) {
+
+        int parentId = userDetails.getParentId();
+
+        MyChildBalanceResDto myChildBalanceResDto = parentService.getMyChildBalance(parentId,childId);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "자녀의 카드 잔액을 조회했습니다.",
+                        myChildBalanceResDto
                 )
         );
     }

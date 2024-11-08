@@ -22,6 +22,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -44,7 +45,7 @@ public class ChildService {
 
         String name = childSignupReqDto.getName();
         String tel = childSignupReqDto.getTel();
-        Date bday = childSignupReqDto.getBday();
+        LocalDate bday = childSignupReqDto.getBday();
         Gender gender = childSignupReqDto.getGender();
         String loginId = childSignupReqDto.getLoginId();
         String password = childSignupReqDto.getPassword();

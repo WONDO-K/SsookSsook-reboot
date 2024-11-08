@@ -89,8 +89,8 @@ public class QuartzConfig {
         return TriggerBuilder.newTrigger()
                 .forJob(balanceExpireJobDetail())
                 .withIdentity("balanceExpireTrigger")
-                //.withSchedule(CronScheduleBuilder.cronSchedule("59 59 23 L * ?")) // 매월 마지막 날 23:59:59
-                .withSchedule(CronScheduleBuilder.cronSchedule("0 */1 * * * ?")) // 1분마다 실행
+                .withSchedule(CronScheduleBuilder.cronSchedule("59 59 23 L * ?")) // 매월 마지막 날 23:59:59
+//                .withSchedule(CronScheduleBuilder.cronSchedule("0 */1 * * * ?")) // 1분마다 실행
                 .build();
     }
 
@@ -108,8 +108,8 @@ public class QuartzConfig {
         return TriggerBuilder.newTrigger()
                 .forJob(dailySpentResetJobDetail())
                 .withIdentity("dailySpentResetTrigger")
-                //.withSchedule(CronScheduleBuilder.dailyAtHourAndMinute(0, 0)) // 매일 자정 00:00
-                .withSchedule(CronScheduleBuilder.cronSchedule("0 0 * * * ?")) // 매 정각 실행
+                .withSchedule(CronScheduleBuilder.dailyAtHourAndMinute(0, 0)) // 매일 자정 00:00
+//                .withSchedule(CronScheduleBuilder.cronSchedule("0 */1 * * * ?")) // 1분마다 실행
                 .build();
     }
 }

@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,11 +64,11 @@ public class PaymentServiceImpl implements PaymentService {
 //                .orElseThrow(() -> new SsookException(ErrorCode.CARD_NOT_FOUND));
 
         // 2. 카드 만료 여부 확인
-        if (card.getExpirationDate().before(new java.util.Date())) {
-            log.error("카드 만료됨 - 카드 ID: {}", card.getId());
+        // 현재 날짜를 기준으로 유효기간 확인
+        YearMonth now = YearMonth.now();
+        if (card.getExpirationDate().isBefore(now)) {
             throw new SsookException(ErrorCode.CARD_EXPIRED);
         }
-
         // 3. 카드 활성화 여부 확인
         if (!card.isActive()) {
             log.error("비활성화된 카드 사용 시도 - 카드 ID: {}", card.getId());
@@ -213,7 +214,7 @@ public class PaymentServiceImpl implements PaymentService {
             Card card = Card.builder()
                     .child(child)
                     .cardToken(cardToken)
-                    .expirationDate(dto.getExpirationDate())
+                    .expirationDate(dto.getExpirationAsYearMonth())
                     .isActive(dto.isActive())
                     .build();
             cardRepository.save(card);
@@ -399,7 +400,7 @@ public class PaymentServiceImpl implements PaymentService {
         // 카드 정보 업데이트
         try {
             card.setCardToken(cardToken);
-            card.setExpirationDate(dto.getExpirationDate());
+            card.setExpirationDate(dto.getExpirationAsYearMonth());
             card.setActive(dto.isActive());
             cardRepository.save(card);
             log.info("카드 정보 업데이트 성공 - 카드 ID: {}", card.getId());
