@@ -41,10 +41,12 @@ public enum ErrorCode {
     CARD_EXPIRED(HttpStatus.BAD_REQUEST, "카드가 만료되었습니다."),
     CARD_REGISTRATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "카드 등록 중 문제가 발생했습니다."),
     TOKENIZATION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "카드 정보 토큰화 중 문제가 발생했습니다."),
+    CARD_ALREADY_REGISTERED(HttpStatus.BAD_REQUEST, "카드는 한 개만 등록할 수 있습니다."),
 
     // 잔액 관련 에러 코드
     BALANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "잔액을 조회할 수 없습니다."),
     INSUFFICIENT_BALANCE(HttpStatus.BAD_REQUEST, "잔액이 부족합니다."),
+    EXCEEDS_DAILY_LIMIT(HttpStatus.BAD_REQUEST, "일일 한도를 초과했습니다."),
 
     // 결제 관련 에러 코드
     PAYMENT_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "결제 처리 중 문제가 발생했습니다."),

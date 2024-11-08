@@ -4,6 +4,7 @@ import com.stillalive.Ssook_BE.enums.Gender;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Getter
@@ -12,6 +13,6 @@ public class ParentResDto {
     private Integer parentId;
     private String name;
     private String tel;
-    private Date bday;
+    private LocalDate bday;
     private Gender gender;
 }

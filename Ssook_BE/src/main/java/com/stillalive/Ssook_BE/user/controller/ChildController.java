@@ -9,10 +9,12 @@ import com.stillalive.Ssook_BE.user.service.ChildService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @Tag(name = "Child Controller", description = "자녀 API")
 @RequestMapping("/api/v1/child")
@@ -25,7 +27,7 @@ public class ChildController {
     @Operation(summary = "청소년 회원가입", description = "청소년 회원가입을 진행합니다.")
     @PostMapping("/join")
     public ResponseEntity<ApiResponse<Void>> join(@RequestBody ChildSignupReqDto childSignupReqDto) {
-
+        log.info("childSignupReqDto = {}", childSignupReqDto);
         childService.join(childSignupReqDto);
 
         return ResponseEntity.ok(

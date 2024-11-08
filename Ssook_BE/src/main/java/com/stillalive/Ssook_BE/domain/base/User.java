@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Getter
@@ -21,8 +22,9 @@ public abstract class User extends BaseTimeEntity {
     private String tel;
 
     @Column(nullable = false)
-    @Temporal(TemporalType.DATE)
-    private Date bday;
+//    @Temporal(TemporalType.DATE)
+//    private Date bday;
+    private LocalDate bday; // LocalDate 타입으로 변경
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

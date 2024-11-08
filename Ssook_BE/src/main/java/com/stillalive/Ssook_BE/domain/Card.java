@@ -1,15 +1,13 @@
 package com.stillalive.Ssook_BE.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.time.YearMonth;
 import java.util.Date;
 
-@Getter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "card")
@@ -31,9 +29,8 @@ public class Card {
     @Column(name = "card_token")
     private String cardToken;
 
-    @Column(name = "exiration_date")
-    @Temporal(TemporalType.DATE)
-    private Date expirationDate;
+    @Column(name = "expiration_date")
+    private YearMonth expirationDate;  // 연/월 정보만 저장
 
     @Column(name = "is_active")
     @ColumnDefault("1")

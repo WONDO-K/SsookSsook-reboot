@@ -1,7 +1,10 @@
 package com.stillalive.Ssook_BE.pay.controller;
 
 import com.stillalive.Ssook_BE.common.ApiResponse;
+import com.stillalive.Ssook_BE.domain.Child;
 import com.stillalive.Ssook_BE.domain.ChildHistory;
+import com.stillalive.Ssook_BE.exception.ErrorCode;
+import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.pay.dto.*;
 import com.stillalive.Ssook_BE.pay.service.PaymentService;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
@@ -35,11 +38,19 @@ public class PayController {
      * */
 
     @PostMapping("/register")
-    @Operation(summary = "카드 등록", description = "카드 등록 API")
+    @Operation(summary = "카드 등록", description = "카드 정보를 토대로 카드를 등록합니다.")
     public ResponseEntity<ApiResponse<?>> registerCard(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody RegisterCardReqDto dto) {
         int childId = userDetails.getChildId();
         paymentService.registerCard(dto, childId);
         return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "카드가 등록되었습니다.", null));
+    }
+
+    @PutMapping("/register/change")
+    @Operation(summary = "등록 카드 변경", description = "등록된 카드를 변경합니다.")
+    public ResponseEntity<ApiResponse<?>> changeCard(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody RegisterCardReqDto dto) {
+        int childId = userDetails.getChildId();
+        paymentService.changeCard(dto, childId);
+        return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "카드가 변경되었습니다.", null));
     }
 
     /**
@@ -83,9 +94,11 @@ public class PayController {
      * */
     @PostMapping
     @Operation(summary = "결제 처리", description = "결제 처리 API")
-    public ResponseEntity<ApiResponse<?>>  processPayment(@RequestBody PaymentReqDto dto) {
+    public ResponseEntity<ApiResponse<?>>  processPayment(@AuthenticationPrincipal CustomUserDetails userDetails,@RequestBody PaymentReqDto dto) {
 
-        paymentService.processPayment(dto);
+        Child child = childRepository.findById(userDetails.getChildId()).orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_CHILD));
+        log.info("결제 요청 - 사용자 ID: {}, 결제 금액: {}", userDetails.getChildId(), dto.getAmount());
+        paymentService.processPayment(dto, child);
         return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "결제가 완료되었습니다.", null));
     }
 

@@ -55,8 +55,8 @@ dependencies {
 	// Mustache
 	implementation 'org.springframework.boot:spring-boot-starter-mustache'
 
-	// Flux
-	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	// Quartz
+	implementation 'org.springframework.boot:spring-boot-starter-quartz'
 
 }
 

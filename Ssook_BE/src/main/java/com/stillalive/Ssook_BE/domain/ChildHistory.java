@@ -13,6 +13,7 @@ import org.springframework.data.annotation.CreatedDate;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -49,6 +50,7 @@ public class ChildHistory {
     private LocalDateTime historyTime;
 
     @OneToMany(mappedBy = "childHistory", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PayDetail> payDetails;
+    @Builder.Default
+    private List<PayDetail> payDetails = new ArrayList<>(); // 리스트 기본 초기화 추가
 
 }
