@@ -100,7 +100,7 @@ public class ParentService {
                 .status(Progress.PENDING)
                 .build());
 
-        // TODO (wondok) 자녀에게 알림 전송
+        alertService.sendAlert(parentId, AlertDtoMapper.toAddChildAlert(parent.getParentId(),parent.getName() ,child.getName()));
 
     }
 
