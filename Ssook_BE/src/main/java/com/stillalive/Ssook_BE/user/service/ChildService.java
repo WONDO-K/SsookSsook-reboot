@@ -116,7 +116,10 @@ public class ChildService {
         // 가족 신청 상태 변경
         familyRelation.accept();
 
-        // TODO (wondok) 부모에게 수락 알림 전송
+        alertService.sendAlert(
+                familyRelation.getParent().getParentId(),
+                AlertDtoMapper.toAcceptChildAlert(familyRelation.getParent().getParentId(), familyRelation.getChild().getName())
+        );
 
     }
 
