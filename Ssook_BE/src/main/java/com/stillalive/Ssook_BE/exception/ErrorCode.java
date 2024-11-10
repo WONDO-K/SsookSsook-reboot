@@ -69,6 +69,7 @@ public enum ErrorCode {
 
     // School
     NOT_FOUND_SCHOOL_MEAL(HttpStatus.NOT_FOUND, "해당 급식을 찾을 수 없습니다."),
+    ALREADY_EATEN(HttpStatus.BAD_REQUEST, "이미 먹은 급식입니다."),
 
     // Nut
     NOT_FOUND_NUT_HISTORY(HttpStatus.NOT_FOUND, "해당 영양 섭취 기록을 찾을 수 없습니다.")

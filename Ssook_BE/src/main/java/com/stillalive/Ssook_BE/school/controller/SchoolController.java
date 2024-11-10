@@ -44,6 +44,8 @@ public class SchoolController {
 
         // 주간 급식표 조회
         SchoolMealListResDto schoolMealListResDto = schoolService.getSchoolMealList(schoolCode, startOfweek, endOfWeek);
+        
+        // TODO (chabs) null 뜨는 것 같은데
 
         return ResponseEntity.ok(
                 ApiResponse.of(
@@ -89,7 +91,7 @@ public class SchoolController {
 
     @Operation(summary = "자녀가 해당일 점심을 먹음. 영양소 증가", description = "자녀가 해당일 점심을 먹음. 영양소 증가")
     @PostMapping("/lunch")
-    public ResponseEntity<ApiResponse<Void>> eatLunch(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date) {
+    public ResponseEntity<ApiResponse<Void>> eatLunch(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date date) {
 
         Integer childId = customUserDetails.getChildId();
         
