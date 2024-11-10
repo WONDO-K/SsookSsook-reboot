@@ -2,10 +2,12 @@ package com.stillalive.Ssook_BE.school.service;
 
 import com.stillalive.Ssook_BE.domain.Child;
 import com.stillalive.Ssook_BE.domain.ChildSchoolMeal;
+import com.stillalive.Ssook_BE.domain.NutHistory;
 import com.stillalive.Ssook_BE.domain.SchoolMeal;
 import com.stillalive.Ssook_BE.enums.Meal;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
+import com.stillalive.Ssook_BE.nut.repository.NutHistoryRepository;
 import com.stillalive.Ssook_BE.school.dto.SchoolListResDto;
 import com.stillalive.Ssook_BE.school.dto.SchoolMealDetailDto;
 import com.stillalive.Ssook_BE.school.dto.SchoolMealListResDto;
@@ -31,6 +33,7 @@ public class SchoolService {
     private final SchoolMealRepository schoolMealRepository;
     private final ChildRepository childRepository;
     private final ChildSchoolMealRepository childSchoolMealRepository;
+    private final NutHistoryRepository nutHistoryRepository;
 
     // 주간 급식 리스트 조회
     public SchoolMealListResDto getSchoolMealList(Integer schoolCode, LocalDate startOfWeek, LocalDate endOfWeek) {
@@ -143,6 +146,11 @@ public class SchoolService {
         SchoolMeal schoolMeal = schoolMealRepository.findSchoolMealIdBySchoolCodeAndDateAndMeal(schoolCode, date, Meal.LUNCH)
                 .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_SCHOOL_MEAL));
 
+        // 이미 먹었으면 예외 처리
+        if (childSchoolMealRepository.existsByChildAndSchoolMeal(child, schoolMeal)) {
+            throw new SsookException(ErrorCode.ALREADY_EATEN);
+        }
+
         // 자녀가 해당일 점심을 먹음
         childSchoolMealRepository.save(ChildSchoolMeal.builder()
                 .child(child)
@@ -150,8 +158,13 @@ public class SchoolService {
                 .isEaten(true)
                 .build());
 
-        // TODO(chabs) 영양소 증가
-//        child.addNutrient(schoolMeal.getNutrient());
+        // 영양소 섭취 기록
+        nutHistoryRepository.save(NutHistory.builder()
+                .child(child)
+                .eatDate(date)
+                .meal(Meal.LUNCH)
+                .nutrient(schoolMeal.getNutrient())
+                .build());
 
     }
 }
