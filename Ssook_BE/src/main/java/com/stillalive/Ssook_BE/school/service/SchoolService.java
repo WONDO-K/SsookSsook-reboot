@@ -131,8 +131,8 @@ public class SchoolService {
         return result.stream().limit(10).collect(Collectors.toList());
     }
 
-    // 자녀가 해당일 점심을 먹음, 영양소 증가
-    public void eatLunch(Integer childId, Date date) {
+    // 자녀가 해당일 급식을 먹음, 영양소 증가
+    public void eatSchoolMeal(Integer childId, Date date, Meal meal) {
 
         // 자녀
         Child child = childRepository.findById(childId)
@@ -144,7 +144,7 @@ public class SchoolService {
         log.info("childId: {}, schoolCode: {}, date: {}", childId, schoolCode, date);
 
         // 해당일의 급식 ID 조회
-        SchoolMeal schoolMeal = schoolMealRepository.findSchoolMealIdBySchoolCodeAndDateAndMeal(schoolCode, date, Meal.LUNCH)
+        SchoolMeal schoolMeal = schoolMealRepository.findSchoolMealIdBySchoolCodeAndDateAndMeal(schoolCode, date, meal)
                 .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_SCHOOL_MEAL));
 
         // 이미 먹었으면 예외 처리
@@ -152,7 +152,7 @@ public class SchoolService {
             throw new SsookException(ErrorCode.ALREADY_EATEN);
         }
 
-        // 자녀가 해당일 점심을 먹음
+        // 자녀가 해당일 Meal을 먹음
         childSchoolMealRepository.save(ChildSchoolMeal.builder()
                 .child(child)
                 .schoolMeal(schoolMeal)
@@ -163,7 +163,7 @@ public class SchoolService {
         nutHistoryRepository.save(NutHistory.builder()
                 .child(child)
                 .eatDate(date)
-                .meal(Meal.LUNCH)
+                .meal(meal)
                 .nutrient(schoolMeal.getNutrient())
                 .build());
 
