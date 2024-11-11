@@ -1,6 +1,9 @@
 package com.stillalive.Ssook_BE.school.controller;
 
 import com.stillalive.Ssook_BE.common.ApiResponse;
+import com.stillalive.Ssook_BE.enums.Meal;
+import com.stillalive.Ssook_BE.exception.ErrorCode;
+import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.school.dto.*;
 import com.stillalive.Ssook_BE.school.service.SchoolService;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
@@ -45,8 +48,6 @@ public class SchoolController {
         // 주간 급식표 조회
         SchoolMealListResDto schoolMealListResDto = schoolService.getSchoolMealList(schoolCode, startOfweek, endOfWeek);
         
-        // TODO (chabs) null 뜨는 것 같은데
-
         return ResponseEntity.ok(
                 ApiResponse.of(
                         200,
@@ -89,27 +90,32 @@ public class SchoolController {
         );
     }
 
-    @Operation(summary = "자녀가 해당일 점심을 먹음. 영양소 증가", description = "자녀가 해당일 점심을 먹음. 영양소 증가")
-    @PostMapping("/lunch")
-    public ResponseEntity<ApiResponse<Void>> eatLunch(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date date) {
+    @Operation(summary = "자녀가 해당일 급식을 먹음. 영양소 증가", description = "자녀가 해당일 급식을 먹음. 영양소 증가")
+    @PostMapping("/meal")
+    public ResponseEntity<ApiResponse<Void>> eatSchoolMeal(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                                      @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
+                                                      @RequestParam(required = false) Meal meal
+    ) {
+
+        if (customUserDetails.isParent()) {
+            throw new SsookException(ErrorCode.NOT_CHILD_BUT_PARENT);
+        }
 
         Integer childId = customUserDetails.getChildId();
         
-        // 안돼서 임시로 // TODO(chabs)  // api 명세서 쓰기
-        childId = (childId != null) ? childId : 3;    // 없으면 1번 자녀
-
         date = (date != null) ? date : new Date();    // 없으면 오늘 날짜
+        meal = (meal != null) ? meal : Meal.LUNCH;    // 없으면 점심
 
-        log.info(childId + " 자녀가 " + date + "에 점심을 먹음. 영양소 증가");
 
-        schoolService.eatLunch(childId, date);
+        schoolService.eatSchoolMeal(childId, date, meal);
 
+        log.info(childId + " 자녀가 " + date + "에 " + meal + "을 먹음. 영양소 증가");
 
         return ResponseEntity.ok(
                 ApiResponse.of(
                         200,
                         "OK",
-                        "자녀가 해당일 점심을 먹음. 영양소 증가",
+                        "자녀가 해당일 " + meal + "을 먹음. 영양소 증가",
                         null
                 )
         );

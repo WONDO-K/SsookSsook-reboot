@@ -30,6 +30,8 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "없는 회원의 정보 입니다."),
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, "해당 유저를 찾을 수 없습니다."),
     WRONG_PASSWORD(HttpStatus.UNAUTHORIZED, "비밀번호가 틀렸습니다."),
+    NOT_CHILD_BUT_PARENT(HttpStatus.BAD_REQUEST, "부모 유저가 아닌 자녀 유저입니다."),
+    NOT_PARENT_BUT_CHILD(HttpStatus.BAD_REQUEST, "자녀 유저가 아닌 부모 유저입니다."),
 
     // Child
     NOT_FOUND_SCHOOL(HttpStatus.NOT_FOUND, "해당 학교를 찾을 수 없습니다."),
