@@ -66,7 +66,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/parent/login", "/api/v1/child/login", "/api/v1/parent/join", "/api/v1/child/join", "/api/v1/user/*").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-//                        .requestMatchers("/api/v1/pay/view/point/charge","/api/v1/pay/point/charge").permitAll() // 임시용
+                        .requestMatchers("/api/v1/pay/view/point/charge").permitAll() // 임시용
                         .requestMatchers("/api/v1/school/search").permitAll() // 학교 검색
                         .requestMatchers("/api/v1/alerts/subscribe").permitAll() // SSE 토큰 전달 불가함.
                         .requestMatchers("/js/**", "/favicon.ico", "/css/**").permitAll() // 정적 리소스에 대한 접근 허용(임시)

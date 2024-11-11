@@ -253,22 +253,22 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    @Override
-    @Transactional
-    public void chargePoints(int parentId, int amount) {
-        log.info("포인트 충전 시작 - 부모 ID: {}, 충전 금액: {}", parentId, amount);
-
-        Parent parent = parentRepository.findById(parentId)
-                .orElseThrow(() -> {
-                    log.error("부모 정보 조회 실패 - 부모 ID: {}", parentId);
-                    return new SsookException(ErrorCode.USER_NOT_FOUND);
-                });
-
-        int newPointBalance = parent.getPoint() + amount;
-        parent.setPoint(newPointBalance);
-        parentRepository.save(parent);
-        log.info("포인트 충전 성공 - 부모 ID: {}, 충전 후 잔액: {}", parentId, newPointBalance);
-    }
+//    @Override
+//    @Transactional
+//    public void chargePoints(int parentId, int amount) {
+//        log.info("포인트 충전 시작 - 부모 ID: {}, 충전 금액: {}", parentId, amount);
+//
+//        Parent parent = parentRepository.findById(parentId)
+//                .orElseThrow(() -> {
+//                    log.error("부모 정보 조회 실패 - 부모 ID: {}", parentId);
+//                    return new SsookException(ErrorCode.USER_NOT_FOUND);
+//                });
+//
+//        int newPointBalance = parent.getPoint() + amount;
+//        parent.setPoint(newPointBalance);
+//        parentRepository.save(parent);
+//        log.info("포인트 충전 성공 - 부모 ID: {}, 충전 후 잔액: {}", parentId, newPointBalance);
+//    }
 
 
     @Override

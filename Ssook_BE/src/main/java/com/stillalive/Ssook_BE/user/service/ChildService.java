@@ -156,7 +156,7 @@ public class ChildService {
         // 알림 전송
         alertService.sendAlert(
                 parent.getParentId(),
-                AlertDtoMapper.toRequestPointAlert(parent.getParentId(), child.getName())
+                AlertDtoMapper.toRequestPointAlert(parent.getParentId(), child.getName(), dto.getMessage())
         );
 
         log.info("포인트 요청 알림 전송 완료 - 부모 ID: {}, 자녀 ID: {}", parent.getParentId(), child.getChildId());
