@@ -1,5 +1,6 @@
 package com.stillalive.Ssook_BE.domain;
 
+import com.stillalive.Ssook_BE.domain.base.BaseTimeEntity;
 import com.stillalive.Ssook_BE.enums.Activity;
 import com.stillalive.Ssook_BE.enums.Gender;
 import jakarta.persistence.Entity;
@@ -12,13 +13,13 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 
-//@Entity
+@Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-//@Table(name = "body_profile")
-public class BodyProfile {
+@Table(name = "body_profile")
+public class BodyProfile extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,13 +31,10 @@ public class BodyProfile {
     private Child child;
 
     @Column(name = "height", nullable = false)
-    private Integer height;
+    private Float height;
 
     @Column(name = "weight", nullable = false)
-    private Integer weight;
-
-    @Column(name = "note_date", nullable = false)
-    private LocalDate date;
+    private Float weight;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "activity", nullable = false)
@@ -51,8 +49,8 @@ public class BodyProfile {
         // 오늘 년도 - 생년월일 년도 = 나이
         int age = LocalDate.now().getYear() - child.getBday().getYear();
         Gender gender = child.getGender();
-        int height = this.height;
-        int weight = this.weight;
+        float height = this.height;
+        float weight = this.weight;
         Activity activity = this.activity;
         double alpha, beta, gamma, delta;
         double pa;
@@ -90,4 +88,19 @@ public class BodyProfile {
         this.caloryEer = (int) Math.round(alpha + (beta * age) + (pa * ((gamma * weight) + (delta * height / 100.0))));
     }
 
+//    생성자 함수
+    public BodyProfile(Child child, float height, float weight, Activity activity) {
+        this.child = child;
+        this.height = height;
+        this.weight = weight;
+        this.activity = activity;
+        calculateEER(child);
+    }
+
+    public void updateProfile(float height, float weight, Activity activity) {
+        this.height = height;
+        this.weight = weight;
+        this.activity = activity;
+        calculateEER(this.child);
+    }
 }

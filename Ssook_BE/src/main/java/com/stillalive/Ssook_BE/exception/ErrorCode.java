@@ -34,6 +34,7 @@ public enum ErrorCode {
     // Child
     NOT_FOUND_SCHOOL(HttpStatus.NOT_FOUND, "해당 학교를 찾을 수 없습니다."),
     NOT_FOUND_CHILD(HttpStatus.NOT_FOUND, "해당 아이를 찾을 수 없습니다."),
+    NOT_FOUND_BODYPROFILE(HttpStatus.NOT_FOUND, "해당 부모를 찾을 수 없습니다."),
 
     // 카드 관련 에러 코드
     CARD_NOT_FOUND(HttpStatus.NOT_FOUND, "카드를 찾을 수 없습니다."),
