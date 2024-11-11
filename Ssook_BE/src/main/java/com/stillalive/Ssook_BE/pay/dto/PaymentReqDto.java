@@ -3,10 +3,7 @@ package com.stillalive.Ssook_BE.pay.dto;
 import com.stillalive.Ssook_BE.enums.PayType;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -14,6 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
 public class PaymentReqDto {
 
     @NotNull(message = "식당 ID는 필수입니다.")
