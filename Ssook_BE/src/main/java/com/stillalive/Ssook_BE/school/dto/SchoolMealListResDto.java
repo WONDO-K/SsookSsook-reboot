@@ -8,6 +8,7 @@ import java.util.List;
 @Getter
 @Builder
 public class SchoolMealListResDto {
+    private Integer schoolCode;
     private List<SchoolMealDetailDto> schoolMealList;
     private Integer totalItems;
 }

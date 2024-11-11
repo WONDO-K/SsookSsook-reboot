@@ -54,6 +54,7 @@ public class SchoolService {
 
         // DTO로 변환 후 반환
         return SchoolMealListResDto.builder()
+                .schoolCode(schoolCode)
                 .schoolMealList(schoolMealList)
                 .totalItems(schoolMealList.size())
                 .build();
