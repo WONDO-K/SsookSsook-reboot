@@ -124,6 +124,23 @@ public class DinerController {
         );
     }
 
+    @Operation(summary = "해당 메뉴를 판매하는 식당 조회", description = "해당 메뉴를 판매하는 식당을 조회합니다.")
+    @GetMapping("/{menuId}/diner")
+    public ResponseEntity<ApiResponse<MenuDinerResDto>> getDinerByFood(@AuthenticationPrincipal CustomUserDetails customUserDetails
+            , @PathVariable Integer menuId) {
+
+        MenuDinerResDto menuDinerResDto = dinerService.getDinerByMenu(menuId);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "해당 메뉴를 판매하는 식당을 조회합니다.",
+                        menuDinerResDto
+                )
+        );
+    }
+
 
 
 
