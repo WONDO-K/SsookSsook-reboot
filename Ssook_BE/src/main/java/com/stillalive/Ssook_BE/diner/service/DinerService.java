@@ -2,13 +2,13 @@ package com.stillalive.Ssook_BE.diner.service;
 
 import com.stillalive.Ssook_BE.diner.dto.*;
 import com.stillalive.Ssook_BE.diner.repository.DinerRepository;
-import com.stillalive.Ssook_BE.domain.Diner;
+import com.stillalive.Ssook_BE.domain.Menu;
 import com.stillalive.Ssook_BE.exception.SsookException;
+import com.stillalive.Ssook_BE.menu.repository.MenuRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 public class DinerService {
 
     private final DinerRepository dinerRepository;
+    private final MenuRepository menuRepository;
 
     public DinerListResDto getDinerList() {
         return DinerListResDto.builder()
@@ -117,6 +118,17 @@ public class DinerService {
                                 .orElseThrow(() -> new SsookException(ErrorCode.DINER_NOT_FOUND))
                 )
                 .totalItems(dinerRepository.findById(dinerId).map(diner -> diner.getMenus().size()).orElse(0))
+                .build();
+    }
+
+    public MenuDinerResDto getDinerByMenu(Integer menuId) {
+
+        Menu menu = menuRepository.findById(menuId).orElseThrow(() -> new SsookException(ErrorCode.MENU_NOT_FOUND));
+
+        return MenuDinerResDto.builder()
+                .dinerId(menu.getDiner().getId())
+                .dinerName(menu.getDiner().getName())
+                .category(menu.getDiner().getCategory())
                 .build();
     }
 
