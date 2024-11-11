@@ -1,19 +1,13 @@
 package com.stillalive.Ssook_BE.user.service;
 
-import com.stillalive.Ssook_BE.domain.Child;
-import com.stillalive.Ssook_BE.domain.FamilyRelation;
-import com.stillalive.Ssook_BE.domain.Parent;
-import com.stillalive.Ssook_BE.domain.School;
+import com.stillalive.Ssook_BE.domain.*;
 import com.stillalive.Ssook_BE.enums.Gender;
 import com.stillalive.Ssook_BE.enums.Progress;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.user.dto.RequestPointReqDto;
 import com.stillalive.Ssook_BE.user.dto.*;
-import com.stillalive.Ssook_BE.user.repository.ChildRepository;
-import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
-import com.stillalive.Ssook_BE.user.repository.ParentRepository;
-import com.stillalive.Ssook_BE.user.repository.SchoolRepository;
+import com.stillalive.Ssook_BE.user.repository.*;
 import com.stillalive.Ssook_BE.util.alert.AlertService;
 import com.stillalive.Ssook_BE.util.alert.dto.AlertDtoMapper;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +31,7 @@ public class ChildService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final ParentRepository parentRepository;
     private final AlertService alertService;
+    private final BodyProfileRepository bodyProfileRepository;
 
     private static final Logger log = LoggerFactory.getLogger(ChildService.class);
 
@@ -178,5 +173,35 @@ public class ChildService {
                 .updatedAt(child.getUpdatedAt())
                 .isParent(false)
                 .build();
+    }
+
+    //    아이 신체정보 기입
+    @Transactional
+    public void inputBodyProfile(Integer childId, BodyProfileReqDto bodyProfileReqDto) {
+        Child child = childRepository.findById(childId).orElseThrow(() -> {
+            throw new SsookException(ErrorCode.NOT_FOUND_CHILD);
+        });
+
+        BodyProfile bodyProfile = new BodyProfile(child, bodyProfileReqDto.getHeight(), bodyProfileReqDto.getWeight(), bodyProfileReqDto.getActivity());
+
+        bodyProfileRepository.save(bodyProfile);
+        log.info("아이 신체 정보 기입 완료 - 아이 ID: {}", childId);
+
+    }
+
+    //   아이 신체정보 수정
+    @Transactional
+    public void updateBodyProfile(Integer childId, BodyProfileReqDto bodyProfileReqDto) {
+        Child child = childRepository.findById(childId).orElseThrow(() -> {
+            throw new SsookException(ErrorCode.NOT_FOUND_CHILD);
+        });
+
+        BodyProfile bodyProfile = bodyProfileRepository.findByChild(child).orElseThrow(() -> {
+            throw new SsookException(ErrorCode.NOT_FOUND_BODYPROFILE);
+        });
+
+        bodyProfile.updateProfile(bodyProfileReqDto.getHeight(), bodyProfileReqDto.getWeight(), bodyProfileReqDto.getActivity());
+
+        log.info("아이 신체 정보 수정 완료 - 아이 ID: {}", childId);
     }
 }
