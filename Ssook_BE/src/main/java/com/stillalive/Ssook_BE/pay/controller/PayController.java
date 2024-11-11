@@ -156,12 +156,12 @@ public class PayController {
         return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "거래내역 상세 조회 성공", paymentDetailDto));
     }
 
-    @PostMapping("/kakaopay/success")
-    @Operation(summary = "카카오페이 결제 성공 처리", description = "카카오페이 결제 성공 시 호출되는 API")
-    public ResponseEntity<ApiResponse<?>> chargePoints(@RequestBody KakaoPaySuccessResDto responseDto) {
-        paymentService.chargePoints(responseDto.getParentId(), responseDto.getAmount());
-        return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "포인트 충전 성공", null));
-    }
+//    @PostMapping("/kakaopay/success")
+//    @Operation(summary = "카카오페이 결제 성공 처리", description = "카카오페이 결제 성공 시 호출되는 API")
+//    public ResponseEntity<ApiResponse<?>> chargePoints(@RequestBody KakaoPaySuccessResDto responseDto) {
+//        paymentService.chargePoints(responseDto.getParentId(), responseDto.getAmount());
+//        return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "포인트 충전 성공", null));
+//    }
 
     /**
      * 포인트 충전 API

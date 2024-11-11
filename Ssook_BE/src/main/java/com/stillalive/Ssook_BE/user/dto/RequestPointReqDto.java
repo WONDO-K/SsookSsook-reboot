@@ -18,4 +18,6 @@ public class RequestPointReqDto {
     @JsonIgnore
     private Integer childId = null; // 자녀 ID
 
+    private String message; // 요청 메시지
+
 }
