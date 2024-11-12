@@ -10,6 +10,7 @@ import com.stillalive.Ssook_BE.pay.dto.ParentHistoryResDto;
 import com.stillalive.Ssook_BE.pay.repository.BalanceRepository;
 import com.stillalive.Ssook_BE.pay.repository.ParentHistoryRepository;
 import com.stillalive.Ssook_BE.user.dto.*;
+import com.stillalive.Ssook_BE.user.repository.BodyProfileRepository;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
 import com.stillalive.Ssook_BE.user.repository.ParentRepository;
@@ -36,6 +37,7 @@ public class ParentService {
     private final ParentRepository parentRepository;
     private final ChildRepository childRepository;
     private final FamilyRelationRepository familyRelationRepository;
+    private final BodyProfileRepository bodyProfileRepository;
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -152,12 +154,15 @@ public class ParentService {
     }
 
     // 자녀 상세 조회
-    public ChildResDto findChild(Integer childId) {
+    @Transactional(readOnly = true)
+    public ChildDetailResDto findChild(Integer childId) {
         Child child = childRepository.findById(childId).orElseThrow(() -> {
             throw new SsookException(ErrorCode.NOT_FOUND_CHILD);
         });
+        BodyProfile bodyProfile = bodyProfileRepository.findByChild(child)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_BODYPROFILE));
 
-        return ChildResDto.builder()
+        return ChildDetailResDto.builder()
                 .childId(child.getChildId())
                 .name(child.getName())
                 .tel(child.getTel())
@@ -165,6 +170,9 @@ public class ParentService {
                 .gender(child.getGender())
                 .point(child.getPoint())
                 .schoolName(child.getSchool().getName())
+                .height(bodyProfile.getHeight())
+                .weight(bodyProfile.getWeight())
+                .activity(bodyProfile.getActivity())
                 .build();
     }
 
@@ -208,7 +216,6 @@ public class ParentService {
         parentHistoryRepository.save(parentHistory);
         log.info("부모 내역 저장 완료 - 부모 ID: {}, 내역 ID: {}", parent.getParentId(), parentHistory.getId());
     }
-
 
     public UserInfoResDto getUserInfo(String loginId) {
         Parent parent = parentRepository.findByLoginId(loginId)

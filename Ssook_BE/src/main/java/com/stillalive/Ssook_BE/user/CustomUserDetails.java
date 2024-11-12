@@ -3,6 +3,8 @@ package com.stillalive.Ssook_BE.user;
 import com.stillalive.Ssook_BE.domain.Child;
 import com.stillalive.Ssook_BE.domain.Parent;
 import com.stillalive.Ssook_BE.domain.base.User;
+import com.stillalive.Ssook_BE.exception.ErrorCode;
+import com.stillalive.Ssook_BE.exception.SsookException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -72,24 +74,28 @@ public class CustomUserDetails implements UserDetails {
     public Integer getChildId() {
         if (user instanceof Child) {
             return ((Child) user).getChildId();
+        } else {
+            throw new SsookException(ErrorCode.NOT_PARENT_BUT_CHILD);
         }
-        return null;
+
     }
 
     // 부모 ID 반환 메서드
     public Integer getParentId() {
         if (user instanceof Parent) {
             return ((Parent) user).getParentId();
+        } else {
+            throw new SsookException(ErrorCode.NOT_CHILD_BUT_PARENT);
         }
-        return null;
     }
 
     // 학교 코드 반환
     public Integer getSchoolCode() {
         if (user instanceof Child) {
             return ((Child) user).getSchool().getCode();
+        } else {
+            throw new SsookException(ErrorCode.NOT_CHILD_BUT_PARENT);
         }
-        return null;
     }
 
 }

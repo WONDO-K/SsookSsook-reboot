@@ -77,6 +77,9 @@ public class SecurityConfig {
                 .addFilterAt(parentLoginFilter, UsernamePasswordAuthenticationFilter.class);
 //                .addFilterBefore(new LogoutFilter(refreshService), org.springframework.security.web.authentication.logout.LogoutFilter.class);
 
+        // LogoutFilter 추가
+        http.addFilterBefore(new LogoutFilter(), UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
