@@ -115,14 +115,14 @@ public class ParentController {
 
     @Operation(summary = "자녀 정보 상세 조회", description = "자녀 정보를 상세를 조회합니다.")
     @GetMapping("/child/{childId}")
-    public ResponseEntity<ApiResponse<ChildResDto>> findChild(@PathVariable Integer childId) {
+    public ResponseEntity<ApiResponse<ChildDetailResDto>> findChild(@PathVariable Integer childId) {
 
-        ChildResDto childResDto = parentService.findChild(childId);
+        ChildDetailResDto childDetailResDto = parentService.findChild(childId);
 
         return ResponseEntity.ok(
                 ApiResponse.of(
                         HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "자녀 상세를 조회했습니다.",
-                        childResDto
+                        childDetailResDto
                 )
         );
     }

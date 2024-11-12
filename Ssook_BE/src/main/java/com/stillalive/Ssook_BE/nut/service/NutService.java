@@ -1,5 +1,9 @@
 package com.stillalive.Ssook_BE.nut.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.stillalive.Ssook_BE.diner.repository.DinerRepository;
+import com.stillalive.Ssook_BE.domain.Diner;
 import com.stillalive.Ssook_BE.domain.NutHistory;
 import com.stillalive.Ssook_BE.enums.Meal;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
@@ -8,22 +12,36 @@ import com.stillalive.Ssook_BE.nut.dto.DayIntakeNutResDto;
 import com.stillalive.Ssook_BE.nut.dto.IntakeNutResDto;
 import com.stillalive.Ssook_BE.nut.dto.WeekIntakeNutResDto;
 import com.stillalive.Ssook_BE.nut.repository.NutHistoryRepository;
+import com.stillalive.Ssook_BE.pay.dto.PaymentReqDto;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.authenticator.SingleSignOnSessionKey;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDate;
 import java.time.temporal.WeekFields;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NutService {
 
     private final NutHistoryRepository nutHistoryRepository;
-    
+    private final DinerRepository dinerRepository;
+
+    @Value("${chatgpt.key}")  // application.yml에서 API 키 불러오기
+    private String apiKey;  // 발급받은 API 키
+    private final String gptApiUrl = "https://api.openai.com/v1/chat/completions";
+
+
     // 자녀 영양 섭취
     @Transactional(readOnly = true)
     public IntakeNutResDto getIntakeNut(Integer childId, LocalDate date, Meal mealTime) {
@@ -145,6 +163,61 @@ public class NutService {
                 .iron(weeklyIron)
                 .calcium(weeklyCalcium)
                 .build();
+    }
+
+    // GPT를 이용하여 영양 정보 생성
+    public void genrateNutFromGPT(PaymentReqDto paymentReqDto) {
+        // GPT를 이용하여 영양 정보 생성
+        Integer diner_id=paymentReqDto.getDinerId();
+        Diner diner = dinerRepository.findById(diner_id)
+                .orElseThrow(() -> new SsookException(ErrorCode.DINER_NOT_FOUND));
+        String menuNames = paymentReqDto.getPayDetails().stream()
+                .map(PaymentReqDto.PayDetailDto::getMenuName)
+                .collect(Collectors.joining(", "));
+
+        String prompt = "음식점 카테고리:"+"\n" + " 음식점 이름: " + "\n" + "먹은 메뉴들: " + "\n" + "아이의 나이,성별,키,몸무게,활동량(PA):" + "\n" + "위와 같은 형태의 정보를 줄테니 해당 아이가 먹은 음식의 영양소를 알려줘" + "\n" + "음식 섭취량은 아이의 신체정보를 통해 예측해" + "\n" + "답변은 아래와 같은 json 형태(단위는 없이)로 주고 다른 답변은 일절 생성하지마" + "\n" + "{cal: 100kcal, carb: 100g, protein: 100g, fat: 100g, vitA: 100microgram, vitC: 100mg, ribof: 100mg, thiam: 100mg, iron: 100mg, calcium: 100mg}";
+        String inputText = "음식점 카테고리: " + diner.getCategory() + "\n" + " 음식점 이름: " + diner.getName() + "\n" + "먹은 메뉴들: "+menuNames + "\n" + "아이의 나이,성별,키,몸무게,활동량(PA):";
+
+        // OpenAI API에 보낼 요청 바디 생성
+        Map<String, Object> requestPayload = new HashMap<>();
+        // ChatGPT API 요청에 필요한 파라미터 설정
+        requestPayload.put("model", "gpt-4o");
+        requestPayload.put("messages", List.of(
+                // ChatGPT API에 보낼 메시지 - 맥락
+                Map.of("role", "system", "content", prompt),
+                // ChatGPT API에 보낼 메시지 - 사용자 입력
+                Map.of("role", "user", "content", inputText)
+        ));
+        // 응답 길이 설정
+        requestPayload.put("max_tokens", 1000);  // 응답의 최대 토큰 수
+
+        try {
+            // HTTP 요청 생성
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(apiKey);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestPayload, headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(gptApiUrl, entity, String.class);
+
+            // 응답 처리
+            if (response.getStatusCode() == HttpStatus.OK) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(response.getBody());
+                String generatedText = root.path("choices").get(0).path("message").path("content").asText();
+//              이부분에서 응답을 받아서 처리하면 됩니다.
+
+
+            } else {
+                log.info("ChatGPT API 요청 중 오류 발생: {}", response.getStatusCode());
+
+            }
+        } catch (Exception e) {
+            // 예외 발생 시 오류 메시지 던짐
+            log.info("ChatGPT API 요청 중 오류 발생: {}", e.getMessage());
+        }
+
     }
 
 }

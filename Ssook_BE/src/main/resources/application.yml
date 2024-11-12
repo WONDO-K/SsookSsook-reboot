@@ -1,12 +1,12 @@
 server:
-    port: ${SERVER_PORT}  # ?? ??? ??
+    port: ${SERVER_PORT}
 
     servlet:
         encoding:
             force-response: true
 
     tomcat:
-        connection-timeout: 60s  # 예: 60초로 설정
+        connection-timeout: 60s
 
 spring:
     application:
@@ -31,12 +31,6 @@ spring:
         password: ${MYSQL_ROOT_PASSWORD}  # ?? ??? ??
         driver-class-name: com.mysql.cj.jdbc.Driver
 
-    #        hikari: # mysql ??? ? ???
-    #            maximum-pool-size: 20
-    #            minimum-idle: 10       # ?? ?? ??? ?
-    #            idle-timeout: 30000    # ???? ?? ?? ?? (???)
-    #            connection-timeout: 20000  # ??? ?? ? ???? ?? (???)
-
     jpa:
         properties:
             hibernate:
@@ -51,24 +45,8 @@ spring:
         restart:
             enabled: false
 
-#    logging:
-#        level:
-#            com.gihojise.newscrab.interceptor.LoggingInterceptor: INFO
-
-#    data:
-#        redis:
-#            host: ${REDIS_HOST}  # ?? ??? ??
-#            port: ${REDIS_PORT}  # ?? ??? ??
-#            password: ${REDIS_PASSWORD}  # ?? ??? ??
-    #            lettuce: # redis ??? ? ???
-    #                pool:
-    #                    max-active: 20   # ?? ??? ?
-    #                    min-idle: 10     # ?? ?? ??? ?
-    #                    max-idle: 15     # ?? ?? ??? ?
-    #                    max-wait: 1000   # ???? ???? ?? ???? ?? ?? (???)
-
     jwt:
-        secret: ${JWT_SECRET}  # ?? ??? ??
+        secret: ${JWT_SECRET}
 
 
     quartz:
@@ -95,3 +73,7 @@ springdoc:
     swagger-ui:
         enabled: true
         path: /swagger-ui.html
+
+# 챗지피티 설정
+chatgpt:
+    key: ${CHATGPT_API_KEY}  # 환경 변수로 대체

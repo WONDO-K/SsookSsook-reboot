@@ -145,4 +145,21 @@ public class ChildController {
             );
         }
 
+    // 아이 신체 정보 기입
+    @Operation(summary = "아이 신체 정보 기입", description = "아이 신체 정보를 기입합니다.")
+    @PostMapping("/bodyprofile")
+    public ResponseEntity<ApiResponse<Void>> inputBodyProfile(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody BodyProfileReqDto bodyProfileReqDto) {
+        Integer childId = customUserDetails.getChildId();
+
+        childService.inputBodyProfile(childId,bodyProfileReqDto);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "아이 신체 정보를 기입했습니다.",
+                        null
+                )
+        );
+    }
 }
