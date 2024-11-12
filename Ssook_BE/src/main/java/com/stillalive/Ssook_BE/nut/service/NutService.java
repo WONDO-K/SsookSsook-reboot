@@ -207,8 +207,10 @@ public class NutService {
         Float weight=bodyProfile.getWeight();
         Integer eer=bodyProfile.getCaloryEer();
 
-        String prompt = "음식점 카테고리:"+"\n" + " 음식점 이름: " + "\n" + "먹은 메뉴들: " + "\n" + "아이의 나이,성별,키,몸무게,활동량(PA):" + "\n" + "위와 같은 형태의 정보를 줄테니 해당 아이가 먹은 음식의 영양소를 알려줘" + "\n" + "음식 섭취량은 아이의 신체정보를 통해 예측해" + "\n" + "답변은 아래와 같은 json 형태(단위는 없이)로 주고 다른 답변은 일절 생성하지마" + "\n" + "{cal: 100kcal, carb: 100g, protein: 100g, fat: 100g, vitA: 100microgram, vitC: 100mg, ribof: 100mg, thiam: 100mg, iron: 100mg, calcium: 100mg}";
-        String inputText = "음식점 카테고리: " + diner.getCategory() + "\n" + " 음식점 이름: " + diner.getName() + "\n" + "먹은 메뉴들: "+menuNames + "\n" + "아이의 나이,성별,키,몸무게,활동량(PA):";
+        String prompt = "음식점 카테고리:"+"\n" + " 음식점 이름: " + "\n" + "먹은 메뉴들: " + "\n" + "아이의 나이,성별,키,몸무게,EER:" + "\n" + "위와 같은 형태의 정보를 제공하겠다, 해당 아이가 먹을 양을 고려해서, 먹은 메뉴들을 종합접으로 1끼 기준의 영양소를 알려줘" + "\n" + "추가로 해당 음식점에서 제공 할 것 같은 반찬이나 공기밥이 필요한 음식에 대해서 공기밥을 추가해 그에 맞는 영양소도 적절히 생각해서 영양소에 추가해줘" + "\n" + "음식 섭취량은 아이의 신체정보를 통해 예측해" + "\n" + "답변은 아래와 같은 json 형태(단위는 없이)로 주고 다른 답변은 일절 생성하지마 - 답변에서 단위는 생략하돼 칼로리->kcal, vitA->microgram, 탄단지->g, 나머지->mg으로 생각해줘" + "\n" + "{cal: 100, carb: 100, protein: 100, fat: 100, vitA: 100, vitC: 100, ribof: 100, thiam: 100, iron: 100, calcium: 100}";
+        String inputText = "음식점 카테고리: " + diner.getCategory() + "\n" + " 음식점 이름: " + diner.getName() + "\n" + "먹은 메뉴들: "+menuNames + "\n" + "아이의 나이,성별(남1,여2),키,몸무게,EER: " + age + "세, " + gender +" , " + height + "cm, " + weight + "kg, " + eer + "kcal";
+
+        log.info("ChatGPT API 요청: {}", inputText);
 
         // OpenAI API에 보낼 요청 바디 생성
         Map<String, Object> requestPayload = new HashMap<>();

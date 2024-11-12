@@ -5,13 +5,9 @@ import com.stillalive.Ssook_BE.enums.PayType;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.menu.repository.MenuRepository;
-import com.stillalive.Ssook_BE.menu.service.MenuNutService;
 import com.stillalive.Ssook_BE.nut.service.NutService;
 import com.stillalive.Ssook_BE.pay.dto.*;
-import com.stillalive.Ssook_BE.pay.repository.BalanceRepository;
-import com.stillalive.Ssook_BE.pay.repository.CardRepository;
-import com.stillalive.Ssook_BE.pay.repository.ChildHistoryRepository;
-import com.stillalive.Ssook_BE.pay.repository.ParentHistoryRepository;
+import com.stillalive.Ssook_BE.pay.repository.*;
 import com.stillalive.Ssook_BE.pay.service.PaymentService;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
@@ -24,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
@@ -44,6 +41,7 @@ public class PaymentServiceImpl implements PaymentService {
 //    private final MenuNutService menuNutService;
     private final JWTUtil jwtUtil;
     private final NutService nutService;
+    private final PayDetailRepository payDetailRepository;
 
 
 
@@ -431,6 +429,18 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         log.info("카드 정보 변경 완료 - 자녀 ID: {}", childId);
+    }
+
+    //  최근 일주일 동안 먹은 메뉴 리스트 조회
+    @Override
+    public List<String> getMenuListWeek(List<Integer> child_history_id_list) {
+
+        List<Menu> menuList = payDetailRepository.findByChildHistoryIdIn(child_history_id_list).stream()
+                .map(PayDetail::getMenu)
+                .toList();
+
+        return menuList.stream().map(Menu::getName).toList();
+
     }
 
 }

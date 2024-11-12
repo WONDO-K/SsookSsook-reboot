@@ -27,4 +27,6 @@ public interface PaymentService {
 
     void changeCard(RegisterCardReqDto dto, int childId);
 
+    //  최근 일주일 동안 먹은 메뉴 리스트 조회
+    List<String> getMenuListWeek(List<Integer> child_history_id_list);
 }
