@@ -57,17 +57,22 @@ public class PaymentServiceImpl implements PaymentService {
                     return new SsookException(ErrorCode.CARD_NOT_FOUND);
                 });
 
+        log.info("카드 정보 조회 성공 - 카드 ID: {}", card.getId());
+
         // 2. 카드 만료 여부 확인
         // 현재 날짜를 기준으로 유효기간 확인
         YearMonth now = YearMonth.now();
         if (card.getExpirationDate().isBefore(now)) {
             throw new SsookException(ErrorCode.CARD_EXPIRED);
         }
+        log.info("카드 유효기간 확인 완료 - 카드 ID: {}", card.getId());
+
         // 3. 카드 활성화 여부 확인
         if (!card.isActive()) {
             log.error("비활성화된 카드 사용 시도 - 카드 ID: {}", card.getId());
             throw new SsookException(ErrorCode.PAYMENT_PROCESSING_FAILED);
         }
+        log.info("카드 활성화 확인 완료 - 카드 ID: {}", card.getId());
 
         // 4. 유저 정보 확인
         int paymentAmount = dto.getAmount(); // 결제해야 하는 금액
@@ -90,12 +95,16 @@ public class PaymentServiceImpl implements PaymentService {
                     return new SsookException(ErrorCode.INSUFFICIENT_BALANCE);
                 });
 
+        log.info("잔액 정보 조회 성공 - 카드 ID: {}, 잔액: {}", card.getId(), balance.getCurrentBalance());
+
         // 7. 일일 한도 검사
         int dailySpent = balance.getDailySpentAmount();
         if ((dailySpent + paymentAmount) > 24000) {
             log.error("일일 한도 초과 - 누적 지출 금액: {}", dailySpent + paymentAmount);
             throw new SsookException(ErrorCode.EXCEEDS_DAILY_LIMIT);
         }
+
+        log.info("일일 한도 확인 완료 - 누적 지출 금액: {}", dailySpent + paymentAmount);
 
         int currentBalance = balance.getCurrentBalance();
         int availableCardAmount = Math.min(currentBalance, maxCardLimit); // 카드로 결제 가능한 최대 금액 (잔액과 8000원 한도 중 작은 값)
@@ -330,13 +339,14 @@ public class PaymentServiceImpl implements PaymentService {
                 .build();
 
         List<PayDetail> payDetailList = dto.getPayDetails().stream().map(detailDto -> {
-            Menu menu = menuRepository.findByName(detailDto.getMenuName())
+            Menu menu = menuRepository.findByNameAndDinerId(detailDto.getMenuName(), dto.getDinerId())
                     .orElseThrow(() -> new SsookException(ErrorCode.MENU_NOT_FOUND));
+            log.info("메뉴 정보 조회 성공 - 메뉴 ID: {}", menu.getId());
 
             // MenuNut 조회 또는 생성
 //            menuNutService.createMenuNutIfNotExists(menu.getName());
 
-            return new PayDetail(childHistory, menu, detailDto.getQuantity());
+            return new PayDetail(childHistory, menu,detailDto.getQuantity());
         }).collect(Collectors.toList());
 
         childHistory.getPayDetails().addAll(payDetailList);

@@ -1,5 +1,6 @@
 package com.stillalive.Ssook_BE.menu.repository;
 
+import com.stillalive.Ssook_BE.domain.Diner;
 import com.stillalive.Ssook_BE.domain.Menu;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,5 +11,8 @@ public interface MenuRepository extends JpaRepository<Menu, Integer> {
 
     Optional<Menu> findByName(String menuName);
 
+    Optional<Menu> findByNameAndDinerId(String menuName, int dinerId);
+
     Optional<Menu> findById(Integer menuId);
+
 }
