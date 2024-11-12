@@ -139,6 +139,33 @@ public class DinerService {
                 .build();
     }
 
+    public DinerListResDto getDinerListByMenuName(NearbyDinerWithFoodDto nearbyDinerWithFoodDto) {
+        String menuName = nearbyDinerWithFoodDto.getMenuName();
+        Double lat = nearbyDinerWithFoodDto.getLat();
+        Double lng = nearbyDinerWithFoodDto.getLng();
+        Float range = nearbyDinerWithFoodDto.getRange();
+
+        List<Diner> diners = dinerRepository.findDinerListByMenuNameAndDistance(menuName, lat, lng, range);
+
+        return DinerListResDto.builder()
+                .dinerList(
+                        diners.stream()
+                                .map(diner -> DinerResDto.builder()
+                                        .dinerId(diner.getId())
+                                        .name(diner.getName())
+                                        .address(diner.getAddress())
+                                        .lat(diner.getLat())
+                                        .lng(diner.getLng())
+                                        .tel(diner.getTel())
+                                        .isAngel(diner.getIsAngel())
+                                        .build()
+                                )
+                                .collect(Collectors.toList())
+                )
+                .totalItems(diners.size())
+                .build();
+    }
+
 
 //    // 추천 메뉴 판매 식당 목록 조회
 //    public DinerListResDto getDinerListByFood(Integer foodId) {
