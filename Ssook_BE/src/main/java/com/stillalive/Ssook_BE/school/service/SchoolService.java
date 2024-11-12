@@ -2,10 +2,13 @@ package com.stillalive.Ssook_BE.school.service;
 
 import com.stillalive.Ssook_BE.domain.Child;
 import com.stillalive.Ssook_BE.domain.ChildSchoolMeal;
+import com.stillalive.Ssook_BE.domain.NutHistory;
 import com.stillalive.Ssook_BE.domain.SchoolMeal;
 import com.stillalive.Ssook_BE.enums.Meal;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
+import com.stillalive.Ssook_BE.nut.repository.NutHistoryRepository;
+import com.stillalive.Ssook_BE.nut.service.NutService;
 import com.stillalive.Ssook_BE.school.dto.SchoolListResDto;
 import com.stillalive.Ssook_BE.school.dto.SchoolMealDetailDto;
 import com.stillalive.Ssook_BE.school.dto.SchoolMealListResDto;
@@ -31,6 +34,8 @@ public class SchoolService {
     private final SchoolMealRepository schoolMealRepository;
     private final ChildRepository childRepository;
     private final ChildSchoolMealRepository childSchoolMealRepository;
+    private final NutHistoryRepository nutHistoryRepository;
+    private final NutService nutService;
 
     // 주간 급식 리스트 조회
     public SchoolMealListResDto getSchoolMealList(Integer schoolCode, LocalDate startOfWeek, LocalDate endOfWeek) {
@@ -51,6 +56,7 @@ public class SchoolService {
 
         // DTO로 변환 후 반환
         return SchoolMealListResDto.builder()
+                .schoolCode(schoolCode)
                 .schoolMealList(schoolMealList)
                 .totalItems(schoolMealList.size())
                 .build();
@@ -127,8 +133,8 @@ public class SchoolService {
         return result.stream().limit(10).collect(Collectors.toList());
     }
 
-    // 자녀가 해당일 점심을 먹음, 영양소 증가
-    public void eatLunch(Integer childId, Date date) {
+    // 자녀가 해당일 급식을 먹음, 영양소 증가
+    public void eatSchoolMeal(Integer childId, Date date, Meal meal) {
 
         // 자녀
         Child child = childRepository.findById(childId)
@@ -140,18 +146,23 @@ public class SchoolService {
         log.info("childId: {}, schoolCode: {}, date: {}", childId, schoolCode, date);
 
         // 해당일의 급식 ID 조회
-        SchoolMeal schoolMeal = schoolMealRepository.findSchoolMealIdBySchoolCodeAndDateAndMeal(schoolCode, date, Meal.LUNCH)
+        SchoolMeal schoolMeal = schoolMealRepository.findSchoolMealIdBySchoolCodeAndDateAndMeal(schoolCode, date, meal)
                 .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_SCHOOL_MEAL));
 
-        // 자녀가 해당일 점심을 먹음
+        // 이미 먹었으면 예외 처리
+        if (childSchoolMealRepository.existsByChildAndSchoolMeal(child, schoolMeal)) {
+            throw new SsookException(ErrorCode.ALREADY_EATEN);
+        }
+
+        // 자녀가 해당일 Meal을 먹음
         childSchoolMealRepository.save(ChildSchoolMeal.builder()
                 .child(child)
                 .schoolMeal(schoolMeal)
                 .isEaten(true)
                 .build());
 
-        // TODO(chabs) 영양소 증가
-//        child.addNutrient(schoolMeal.getNutrient());
+        // 영양소 섭취 기록
+        nutService.recordNut(childId, date, meal, schoolMeal.getNutrient());
 
     }
 }

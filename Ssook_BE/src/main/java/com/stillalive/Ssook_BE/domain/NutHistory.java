@@ -5,6 +5,7 @@ import com.stillalive.Ssook_BE.domain.base.Nutrient;
 import com.stillalive.Ssook_BE.enums.Meal;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "nut_history")

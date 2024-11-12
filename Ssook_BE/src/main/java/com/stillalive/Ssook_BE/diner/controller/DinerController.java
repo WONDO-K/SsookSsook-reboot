@@ -21,15 +21,17 @@ public class DinerController {
 
     @Operation(summary = "전체 식당 목록 확인", description = "전체 식당 목록을 확인합니다.")
     @GetMapping("")
-    public ResponseEntity<ApiResponse<DinerListResDto>> getDinerList(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    public ResponseEntity<ApiResponse<DinerListResDto>> getDinerList(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                                                     @RequestParam(defaultValue = "0") int page,
+                                                                    @RequestParam(defaultValue = "10") int size) {
 
-        DinerListResDto dinerListResDto = dinerService.getDinerList();
+        DinerListResDto dinerListResDto = dinerService.getDinerList(page, size);
 
         return ResponseEntity.ok(
                 ApiResponse.of(
                         200,
                         "OK",
-                        "선한영향력가게 목록을 확인합니다.",
+                        "전체 식당 목록을 확인합니다.",
                         dinerListResDto
                 )
         );
@@ -124,7 +126,40 @@ public class DinerController {
         );
     }
 
+    @Operation(summary = "해당 메뉴를 판매하는 식당 조회", description = "해당 메뉴를 판매하는 식당을 조회합니다.")
+    @GetMapping("/{menuId}/diner")
+    public ResponseEntity<ApiResponse<MenuDinerResDto>> getDinerByFood(@AuthenticationPrincipal CustomUserDetails customUserDetails
+            , @PathVariable Integer menuId) {
 
+        MenuDinerResDto menuDinerResDto = dinerService.getDinerByMenu(menuId);
 
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "해당 메뉴를 판매하는 식당을 조회합니다.",
+                        menuDinerResDto
+                )
+        );
+    }
+
+    @Operation(summary = "메뉴이름으로 식당목록 검색", description = "메뉴이름으로 식당목록을 검색합니다.")
+    @GetMapping("/menu")
+    public ResponseEntity<ApiResponse<DinerListResDto>> getDinerListByMenuName(@AuthenticationPrincipal CustomUserDetails customUserDetails
+            , @RequestParam String menu, @RequestParam Double lat, @RequestParam Double lng, @RequestParam(defaultValue = "2.5") float range) {
+
+        NearbyDinerWithFoodDto nearbyDinerWithFoodDto = new NearbyDinerWithFoodDto(menu, lat, lng, range);
+
+        DinerListResDto dinerListResDto = dinerService.getDinerListByMenuName(nearbyDinerWithFoodDto);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "메뉴이름으로 식당목록을 검색합니다.",
+                        dinerListResDto
+                )
+        );
+    }
 
 }

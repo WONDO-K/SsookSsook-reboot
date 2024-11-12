@@ -1,21 +1,27 @@
 package com.stillalive.Ssook_BE.util.alert.dto;
 
+import com.stillalive.Ssook_BE.user.service.ChildService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.LocalDateTime;
 
 public class AlertDtoMapper {
 
-    public static AlertDto toRequestPointAlert(int receiverId, String childName) {
+    private static final Logger log = LoggerFactory.getLogger(AlertDtoMapper.class);
+
+
+    public static AlertDto toRequestPointAlert(int receiverId, String childName, String message) {
         AlertDto alertDto = AlertDto.builder()
                 .receiverId(receiverId)
-                .title("포인트 요청")
-                .message(childName + "님이 포인트를 요청했습니다.")
+                .title(childName + "님의 포인트 요청")
+                .message(message)
                 .timestamp(LocalDateTime.now())
                 .senderIsParent(false)
                 .build();
 
         // 생성된 DTO에 대한 로그
-        System.out.println("AlertDto 생성 확인 - senderIsParent: " + alertDto.isSenderIsParent());
-
+        log.info("AlertDto 생성 확인 - senderIsParent: {}", alertDto.isSenderIsParent());
         return alertDto;
     }
 
@@ -29,8 +35,7 @@ public class AlertDtoMapper {
                 .build();
 
         // 생성된 DTO에 대한 로그
-        System.out.println("AlertDto 생성 확인 - senderIsParent: " + alertDto.isSenderIsParent());
-
+        log.info("AlertDto 생성 확인 - senderIsParent: {}", alertDto.isSenderIsParent());
         return alertDto;
     }
 
@@ -45,8 +50,7 @@ public class AlertDtoMapper {
                 .build();
 
         // 생성된 DTO에 대한 로그
-        System.out.println("AlertDto 생성 확인 - senderIsParent: " + alertDto.isSenderIsParent());
-
+        log.info("AlertDto 생성 확인 - senderIsParent: {}", alertDto.isSenderIsParent());
         return alertDto;
     }
 
@@ -61,8 +65,7 @@ public class AlertDtoMapper {
                 .build();
 
         // 생성된 DTO에 대한 로그
-        System.out.println("AlertDto 생성 확인 - senderIsParent: " + alertDto.isSenderIsParent());
-
+        log.info("AlertDto 생성 확인 - senderIsParent: {}", alertDto.isSenderIsParent());
         return alertDto;
     }
 

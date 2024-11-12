@@ -7,6 +7,7 @@ import com.stillalive.Ssook_BE.domain.BodyProfile;
 import com.stillalive.Ssook_BE.domain.Child;
 import com.stillalive.Ssook_BE.domain.Diner;
 import com.stillalive.Ssook_BE.domain.NutHistory;
+import com.stillalive.Ssook_BE.domain.base.Nutrient;
 import com.stillalive.Ssook_BE.enums.Gender;
 import com.stillalive.Ssook_BE.enums.Meal;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
@@ -16,6 +17,7 @@ import com.stillalive.Ssook_BE.nut.dto.IntakeNutResDto;
 import com.stillalive.Ssook_BE.nut.dto.WeekIntakeNutResDto;
 import com.stillalive.Ssook_BE.nut.repository.NutHistoryRepository;
 import com.stillalive.Ssook_BE.pay.dto.PaymentReqDto;
+import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.BodyProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +42,7 @@ public class NutService {
 
     private final NutHistoryRepository nutHistoryRepository;
     private final DinerRepository dinerRepository;
+    private final ChildRepository childRepository;
     private final BodyProfileRepository bodyProfileRepository;
 
     @Value("${chatgpt.key}")  // application.yml에서 API 키 불러오기
@@ -47,7 +50,23 @@ public class NutService {
     private final String gptApiUrl = "https://api.openai.com/v1/chat/completions";
 
 
-    // 자녀 영양 섭취
+    // 영양소 섭취, 기록 하기
+    @Transactional
+    public void recordNut(Integer childId, Date date, Meal mealTime, Nutrient nutrient) {
+        // 영양소 섭취 기록
+        NutHistory nutHistory = NutHistory.builder()
+                .child(childRepository.findById(childId)
+                        .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_CHILD)))
+                .eatDate(date)
+                .meal(mealTime)
+                .nutrient(nutrient)
+                .build();
+
+        nutHistoryRepository.save(nutHistory);
+    }
+
+
+    // 영양 섭취 조회
     @Transactional(readOnly = true)
     public IntakeNutResDto getIntakeNut(Integer childId, LocalDate date, Meal mealTime) {
         // 영양 섭취 조회

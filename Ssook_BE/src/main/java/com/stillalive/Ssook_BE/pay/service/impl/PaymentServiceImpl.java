@@ -57,17 +57,22 @@ public class PaymentServiceImpl implements PaymentService {
                     return new SsookException(ErrorCode.CARD_NOT_FOUND);
                 });
 
+        log.info("카드 정보 조회 성공 - 카드 ID: {}", card.getId());
+
         // 2. 카드 만료 여부 확인
         // 현재 날짜를 기준으로 유효기간 확인
         YearMonth now = YearMonth.now();
         if (card.getExpirationDate().isBefore(now)) {
             throw new SsookException(ErrorCode.CARD_EXPIRED);
         }
+        log.info("카드 유효기간 확인 완료 - 카드 ID: {}", card.getId());
+
         // 3. 카드 활성화 여부 확인
         if (!card.isActive()) {
             log.error("비활성화된 카드 사용 시도 - 카드 ID: {}", card.getId());
             throw new SsookException(ErrorCode.PAYMENT_PROCESSING_FAILED);
         }
+        log.info("카드 활성화 확인 완료 - 카드 ID: {}", card.getId());
 
         // 4. 유저 정보 확인
         int paymentAmount = dto.getAmount(); // 결제해야 하는 금액
@@ -90,6 +95,8 @@ public class PaymentServiceImpl implements PaymentService {
                     return new SsookException(ErrorCode.INSUFFICIENT_BALANCE);
                 });
 
+        log.info("잔액 정보 조회 성공 - 카드 ID: {}, 잔액: {}", card.getId(), balance.getCurrentBalance());
+
         // 7. 일일 한도 검사
         int dailySpent = balance.getDailySpentAmount();
         if ((dailySpent + paymentAmount) > 24000) {
@@ -97,20 +104,20 @@ public class PaymentServiceImpl implements PaymentService {
             throw new SsookException(ErrorCode.EXCEEDS_DAILY_LIMIT);
         }
 
+        log.info("일일 한도 확인 완료 - 누적 지출 금액: {}", dailySpent + paymentAmount);
+
         int currentBalance = balance.getCurrentBalance();
         int availableCardAmount = Math.min(currentBalance, maxCardLimit); // 카드로 결제 가능한 최대 금액 (잔액과 8000원 한도 중 작은 값)
-        int requiredPointAmount = paymentAmount > availableCardAmount ? paymentAmount - availableCardAmount : 0;
+        int cardPrice = Math.min(paymentAmount, availableCardAmount); // 카드로 결제 가능한 금액
+        int pointPrice = paymentAmount - cardPrice; // 부족한 금액만 포인트로 결제
 
         // 포인트 부족 확인
-        if (requiredPointAmount > child.getPoint()) {
-            log.error("포인트 부족 - 필요 포인트: {}, 현재 포인트: {}", requiredPointAmount, child.getPoint());
+        if (pointPrice > child.getPoint()) {
+            log.error("포인트 부족 - 필요 포인트: {}, 현재 포인트: {}", pointPrice, child.getPoint());
             throw new SsookException(ErrorCode.INSUFFICIENT_BALANCE);
         }
 
-        int cardPrice = 0;
-        int pointPrice = 0;
-
-        // 8. 카드 잔액 및 포인트 차감
+// 8. 카드 잔액 및 포인트 차감
         if (paymentAmount <= availableCardAmount) {
             balance.setCurrentBalance(currentBalance - paymentAmount);
             cardPrice = paymentAmount;
@@ -118,7 +125,7 @@ public class PaymentServiceImpl implements PaymentService {
         } else {
             balance.setCurrentBalance(currentBalance - availableCardAmount);
             cardPrice = availableCardAmount;
-            pointPrice = requiredPointAmount;
+            pointPrice = paymentAmount - availableCardAmount; // 필요한 포인트 금액을 직접 계산
             child.setPoint(child.getPoint() - pointPrice);
             log.info("잔액 및 포인트 차감 완료 - 카드 사용 금액: {}, 포인트 사용 금액: {}", cardPrice, pointPrice);
         }
@@ -254,22 +261,22 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    @Override
-    @Transactional
-    public void chargePoints(int parentId, int amount) {
-        log.info("포인트 충전 시작 - 부모 ID: {}, 충전 금액: {}", parentId, amount);
-
-        Parent parent = parentRepository.findById(parentId)
-                .orElseThrow(() -> {
-                    log.error("부모 정보 조회 실패 - 부모 ID: {}", parentId);
-                    return new SsookException(ErrorCode.USER_NOT_FOUND);
-                });
-
-        int newPointBalance = parent.getPoint() + amount;
-        parent.setPoint(newPointBalance);
-        parentRepository.save(parent);
-        log.info("포인트 충전 성공 - 부모 ID: {}, 충전 후 잔액: {}", parentId, newPointBalance);
-    }
+//    @Override
+//    @Transactional
+//    public void chargePoints(int parentId, int amount) {
+//        log.info("포인트 충전 시작 - 부모 ID: {}, 충전 금액: {}", parentId, amount);
+//
+//        Parent parent = parentRepository.findById(parentId)
+//                .orElseThrow(() -> {
+//                    log.error("부모 정보 조회 실패 - 부모 ID: {}", parentId);
+//                    return new SsookException(ErrorCode.USER_NOT_FOUND);
+//                });
+//
+//        int newPointBalance = parent.getPoint() + amount;
+//        parent.setPoint(newPointBalance);
+//        parentRepository.save(parent);
+//        log.info("포인트 충전 성공 - 부모 ID: {}, 충전 후 잔액: {}", parentId, newPointBalance);
+//    }
 
 
     @Override
@@ -331,13 +338,14 @@ public class PaymentServiceImpl implements PaymentService {
                 .build();
 
         List<PayDetail> payDetailList = dto.getPayDetails().stream().map(detailDto -> {
-            Menu menu = menuRepository.findByName(detailDto.getMenuName())
+            Menu menu = menuRepository.findByNameAndDinerId(detailDto.getMenuName(), dto.getDinerId())
                     .orElseThrow(() -> new SsookException(ErrorCode.MENU_NOT_FOUND));
+            log.info("메뉴 정보 조회 성공 - 메뉴 ID: {}", menu.getId());
 
             // MenuNut 조회 또는 생성
 //            menuNutService.createMenuNutIfNotExists(menu.getName());
 
-            return new PayDetail(childHistory, menu, detailDto.getQuantity());
+            return new PayDetail(childHistory, menu,detailDto.getQuantity());
         }).collect(Collectors.toList());
 
         childHistory.getPayDetails().addAll(payDetailList);

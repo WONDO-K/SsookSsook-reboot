@@ -21,7 +21,7 @@ public interface PaymentService {
 
     ChildHistory getPaymentDetail(int userId, int historyId);
 
-    void chargePoints(int parentId, int amount); // 포인트 충전
+//    void chargePoints(int parentId, int amount); // 포인트 충전
 
     void chargePoint(ChargePointReqDto dto);
 

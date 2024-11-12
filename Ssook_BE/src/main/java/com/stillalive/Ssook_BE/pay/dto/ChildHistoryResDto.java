@@ -29,6 +29,7 @@ public class ChildHistoryResDto {
     @AllArgsConstructor
     @Builder
     public static class PayDetailDto {
+        private int menuId;
         private String menuName;
         private Integer quantity;
         private Integer price;
@@ -37,6 +38,7 @@ public class ChildHistoryResDto {
     public static ChildHistoryResDto toDto(ChildHistory childHistory) {
         List<PayDetailDto> payDetails = childHistory.getPayDetails().stream().map(payDetail ->
                 PayDetailDto.builder()
+                        .menuId(payDetail.getMenu().getId())
                         .menuName(payDetail.getMenu().getName())
                         .quantity(payDetail.getQuantity())
                         .price(payDetail.getMenu().getPrice())
