@@ -108,18 +108,16 @@ public class PaymentServiceImpl implements PaymentService {
 
         int currentBalance = balance.getCurrentBalance();
         int availableCardAmount = Math.min(currentBalance, maxCardLimit); // 카드로 결제 가능한 최대 금액 (잔액과 8000원 한도 중 작은 값)
-        int requiredPointAmount = paymentAmount > availableCardAmount ? paymentAmount - availableCardAmount : 0;
+        int cardPrice = Math.min(paymentAmount, availableCardAmount); // 카드로 결제 가능한 금액
+        int pointPrice = paymentAmount - cardPrice; // 부족한 금액만 포인트로 결제
 
         // 포인트 부족 확인
-        if (requiredPointAmount > child.getPoint()) {
-            log.error("포인트 부족 - 필요 포인트: {}, 현재 포인트: {}", requiredPointAmount, child.getPoint());
+        if (pointPrice > child.getPoint()) {
+            log.error("포인트 부족 - 필요 포인트: {}, 현재 포인트: {}", pointPrice, child.getPoint());
             throw new SsookException(ErrorCode.INSUFFICIENT_BALANCE);
         }
 
-        int cardPrice = 0;
-        int pointPrice = 0;
-
-        // 8. 카드 잔액 및 포인트 차감
+// 8. 카드 잔액 및 포인트 차감
         if (paymentAmount <= availableCardAmount) {
             balance.setCurrentBalance(currentBalance - paymentAmount);
             cardPrice = paymentAmount;
@@ -127,7 +125,7 @@ public class PaymentServiceImpl implements PaymentService {
         } else {
             balance.setCurrentBalance(currentBalance - availableCardAmount);
             cardPrice = availableCardAmount;
-            pointPrice = requiredPointAmount;
+            pointPrice = paymentAmount - availableCardAmount; // 필요한 포인트 금액을 직접 계산
             child.setPoint(child.getPoint() - pointPrice);
             log.info("잔액 및 포인트 차감 완료 - 카드 사용 금액: {}, 포인트 사용 금액: {}", cardPrice, pointPrice);
         }
