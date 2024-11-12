@@ -32,7 +32,7 @@ public class FoodService {
         // 다음날 기준으로 날짜 설정
         LocalDate date = LocalDate.now().plusDays(1);
         LocalDateTime endDate = date.atStartOfDay();
-        LocalDateTime startDate = endDate.minusDays(7);
+        LocalDateTime startDate = endDate.minusDays(6);
 
         // 최근 일주일 동안 먹은 메뉴 리스트
         List<Integer> childHistory_id_list = childHistoryRepository.findByChildIdAndDateRange(childId, startDate, endDate).
@@ -40,40 +40,29 @@ public class FoodService {
 
         // 최근 일주일 동안 먹은 메뉴 리스트 조회
         List<String> menuListWeek = paymentService.getMenuListWeek(childHistory_id_list);
-//        List<String> menuListWeek = Arrays.asList("초밥","비빔냉면", "고추장 찌개", "콩나물국밥", "샌드위치","볶음밥", "삼계탕", "황태북어탕", "BBQ 치킨버거(스파이시)", "BBQ 치킨버거(스파이시)", "BBQ 치킨버거(스파이시)", "BBQ 치킨버거(스파이시)");
-        log.info("menuListWeek: {}", menuListWeek);
+//        List<String> menuListWeek = Arrays.asList("초밥","연어초밥");
 
         // 추천 음식 리스트 조회
         List<String> recoFood = recoMenuRepository.findAllNames();
-        log.info("recoFood: {}", recoFood);
-
-        // 추천 음식 중, 먹지 않은 메뉴들만 선택
-        List<String> unrecommendedFoods = recoFood.stream()
-                .filter(reco -> !menuListWeek.contains(reco)) // 기존에 먹은 메뉴를 제외
-                .collect(Collectors.toList());
 
         // 결과를 저장할 맵 (음식 이름 -> 최소 유사도)
         Map<String, Double> recoFoodMinSimilarity = new HashMap<>();
 
-        for (String recoMenu : unrecommendedFoods) {
-            double minSimilarity = Double.MAX_VALUE;
+        for (String recoMenu : recoFood) {
 
             // 추천 음식 이름 토큰화
             Set<String> recoTokens = new HashSet<>(tokenizeKorean(recoMenu));
+
+            double jaccardSimilarity=0;
 
             for (String eatenMenu : menuListWeek) {
                 // 먹은 음식 이름 토큰화
                 Set<String> eatenTokens = new HashSet<>(tokenizeKorean(eatenMenu));
 
                 // 자카드 유사도 계산
-                double jaccardSimilarity = calculateJaccardSimilarity(recoTokens, eatenTokens);
-
-                // 최소 유사도 업데이트
-                if (jaccardSimilarity < minSimilarity) {
-                    minSimilarity = jaccardSimilarity;
-                }
+                jaccardSimilarity += calculateJaccardSimilarity(recoTokens, eatenTokens);
             }
-            recoFoodMinSimilarity.put(recoMenu, minSimilarity);
+            recoFoodMinSimilarity.put(recoMenu, jaccardSimilarity);
         }
 
         // 유사도가 낮은 순으로 정렬
@@ -96,19 +85,28 @@ public class FoodService {
         return Arrays.asList(tokens);
     }
 
-    // 자카드 유사도 계산 메서드
+    // 자카드 유사도 계산 메서드 (부분 일치 고려)
     private double calculateJaccardSimilarity(Set<String> set1, Set<String> set2) {
         if (set1.isEmpty() && set2.isEmpty()) {
             return 1.0; // 둘 다 비어있으면 완전히 동일하다고 판단
         }
 
-        Set<String> intersection = new HashSet<>(set1);
-        intersection.retainAll(set2);
+        // 교집합과 합집합을 직접 계산
+        int intersectionCount = 0;
+        Set<String> unionSet = new HashSet<>(set1);
+        unionSet.addAll(set2);
 
-        Set<String> union = new HashSet<>(set1);
-        union.addAll(set2);
+        // 교집합 계산 (부분 일치 고려)
+        for (String token1 : set1) {
+            for (String token2 : set2) {
+                if (token1.equals(token2) || token1.contains(token2) || token2.contains(token1)) {
+                    intersectionCount++;
+                    break; // 한 번 교집합으로 포함된 항목은 중복 계산 방지
+                }
+            }
+        }
 
-        return (double) intersection.size() / union.size();
+        return (double) intersectionCount / unionSet.size();
     }
 }
 
