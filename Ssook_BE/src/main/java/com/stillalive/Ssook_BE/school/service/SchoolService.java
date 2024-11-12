@@ -8,6 +8,7 @@ import com.stillalive.Ssook_BE.enums.Meal;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.nut.repository.NutHistoryRepository;
+import com.stillalive.Ssook_BE.nut.service.NutService;
 import com.stillalive.Ssook_BE.school.dto.SchoolListResDto;
 import com.stillalive.Ssook_BE.school.dto.SchoolMealDetailDto;
 import com.stillalive.Ssook_BE.school.dto.SchoolMealListResDto;
@@ -34,6 +35,7 @@ public class SchoolService {
     private final ChildRepository childRepository;
     private final ChildSchoolMealRepository childSchoolMealRepository;
     private final NutHistoryRepository nutHistoryRepository;
+    private final NutService nutService;
 
     // 주간 급식 리스트 조회
     public SchoolMealListResDto getSchoolMealList(Integer schoolCode, LocalDate startOfWeek, LocalDate endOfWeek) {
@@ -160,12 +162,7 @@ public class SchoolService {
                 .build());
 
         // 영양소 섭취 기록
-        nutHistoryRepository.save(NutHistory.builder()
-                .child(child)
-                .eatDate(date)
-                .meal(meal)
-                .nutrient(schoolMeal.getNutrient())
-                .build());
+        nutService.recordNut(childId, date, meal, schoolMeal.getNutrient());
 
     }
 }
