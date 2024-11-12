@@ -31,7 +31,7 @@ public class DinerController {
                 ApiResponse.of(
                         200,
                         "OK",
-                        "선한영향력가게 목록을 확인합니다.",
+                        "전체 식당 목록을 확인합니다.",
                         dinerListResDto
                 )
         );
@@ -143,7 +143,23 @@ public class DinerController {
         );
     }
 
+    @Operation(summary = "메뉴이름으로 식당목록 검색", description = "메뉴이름으로 식당목록을 검색합니다.")
+    @GetMapping("/menu")
+    public ResponseEntity<ApiResponse<DinerListResDto>> getDinerListByMenuName(@AuthenticationPrincipal CustomUserDetails customUserDetails
+            , @RequestParam String menu, @RequestParam Double lat, @RequestParam Double lng, @RequestParam(defaultValue = "2.5") float range) {
 
+        NearbyDinerWithFoodDto nearbyDinerWithFoodDto = new NearbyDinerWithFoodDto(menu, lat, lng, range);
 
+        DinerListResDto dinerListResDto = dinerService.getDinerListByMenuName(nearbyDinerWithFoodDto);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "메뉴이름으로 식당목록을 검색합니다.",
+                        dinerListResDto
+                )
+        );
+    }
 
 }
