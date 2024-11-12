@@ -2,13 +2,18 @@ package com.stillalive.Ssook_BE.diner.service;
 
 import com.stillalive.Ssook_BE.diner.dto.*;
 import com.stillalive.Ssook_BE.diner.repository.DinerRepository;
+import com.stillalive.Ssook_BE.domain.Diner;
 import com.stillalive.Ssook_BE.domain.Menu;
 import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.menu.repository.MenuRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -18,24 +23,26 @@ public class DinerService {
     private final DinerRepository dinerRepository;
     private final MenuRepository menuRepository;
 
-    public DinerListResDto getDinerList() {
+    public DinerListResDto getDinerList(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Diner> dinerPage = dinerRepository.findAll(pageable);
+
+        List<DinerResDto> dinerList = dinerPage.getContent()
+                .stream()
+                .map(diner -> DinerResDto.builder()
+                        .dinerId(diner.getId())
+                        .name(diner.getName())
+                        .address(diner.getAddress())
+                        .lat(diner.getLat())
+                        .lng(diner.getLng())
+                        .tel(diner.getTel())
+                        .isAngel(diner.getIsAngel())
+                        .build())
+                .collect(Collectors.toList());
+
         return DinerListResDto.builder()
-                .dinerList(
-                        dinerRepository.findAll()
-                                .stream()
-                                .map(diner -> DinerResDto.builder()
-                                        .dinerId(diner.getId())
-                                        .name(diner.getName())
-                                        .address(diner.getAddress())
-                                        .lat(diner.getLat())
-                                        .lng(diner.getLng())
-                                        .tel(diner.getTel())
-                                        .isAngel(diner.getIsAngel())
-                                        .build()
-                                )
-                                .collect(Collectors.toList())
-                )
-                .totalItems((int) dinerRepository.count())
+                .dinerList(dinerList)
+                .totalItems((int) dinerPage.getTotalElements())
                 .build();
     }
 

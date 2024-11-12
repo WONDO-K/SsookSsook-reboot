@@ -21,9 +21,11 @@ public class DinerController {
 
     @Operation(summary = "전체 식당 목록 확인", description = "전체 식당 목록을 확인합니다.")
     @GetMapping("")
-    public ResponseEntity<ApiResponse<DinerListResDto>> getDinerList(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    public ResponseEntity<ApiResponse<DinerListResDto>> getDinerList(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                                                     @RequestParam(defaultValue = "0") int page,
+                                                                    @RequestParam(defaultValue = "10") int size) {
 
-        DinerListResDto dinerListResDto = dinerService.getDinerList();
+        DinerListResDto dinerListResDto = dinerService.getDinerList(page, size);
 
         return ResponseEntity.ok(
                 ApiResponse.of(
