@@ -3,8 +3,11 @@ package com.stillalive.Ssook_BE.nut.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stillalive.Ssook_BE.diner.repository.DinerRepository;
+import com.stillalive.Ssook_BE.domain.BodyProfile;
+import com.stillalive.Ssook_BE.domain.Child;
 import com.stillalive.Ssook_BE.domain.Diner;
 import com.stillalive.Ssook_BE.domain.NutHistory;
+import com.stillalive.Ssook_BE.enums.Gender;
 import com.stillalive.Ssook_BE.enums.Meal;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
@@ -13,6 +16,7 @@ import com.stillalive.Ssook_BE.nut.dto.IntakeNutResDto;
 import com.stillalive.Ssook_BE.nut.dto.WeekIntakeNutResDto;
 import com.stillalive.Ssook_BE.nut.repository.NutHistoryRepository;
 import com.stillalive.Ssook_BE.pay.dto.PaymentReqDto;
+import com.stillalive.Ssook_BE.user.repository.BodyProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,6 +40,7 @@ public class NutService {
 
     private final NutHistoryRepository nutHistoryRepository;
     private final DinerRepository dinerRepository;
+    private final BodyProfileRepository bodyProfileRepository;
 
     @Value("${chatgpt.key}")  // application.yml에서 API 키 불러오기
     private String apiKey;  // 발급받은 API 키
@@ -166,7 +171,7 @@ public class NutService {
     }
 
     // GPT를 이용하여 영양 정보 생성
-    public void genrateNutFromGPT(PaymentReqDto paymentReqDto) {
+    public void genrateNutFromGPT(PaymentReqDto paymentReqDto, Child child) {
         // GPT를 이용하여 영양 정보 생성
         Integer diner_id=paymentReqDto.getDinerId();
         Diner diner = dinerRepository.findById(diner_id)
@@ -174,9 +179,19 @@ public class NutService {
         String menuNames = paymentReqDto.getPayDetails().stream()
                 .map(PaymentReqDto.PayDetailDto::getMenuName)
                 .collect(Collectors.joining(", "));
+        BodyProfile bodyProfile = bodyProfileRepository.findByChild(child)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_BODYPROFILE));
 
-        String prompt = "음식점 카테고리:"+"\n" + " 음식점 이름: " + "\n" + "먹은 메뉴들: " + "\n" + "아이의 나이,성별,키,몸무게,활동량(PA):" + "\n" + "위와 같은 형태의 정보를 줄테니 해당 아이가 먹은 음식의 영양소를 알려줘" + "\n" + "음식 섭취량은 아이의 신체정보를 통해 예측해" + "\n" + "답변은 아래와 같은 json 형태(단위는 없이)로 주고 다른 답변은 일절 생성하지마" + "\n" + "{cal: 100kcal, carb: 100g, protein: 100g, fat: 100g, vitA: 100microgram, vitC: 100mg, ribof: 100mg, thiam: 100mg, iron: 100mg, calcium: 100mg}";
-        String inputText = "음식점 카테고리: " + diner.getCategory() + "\n" + " 음식점 이름: " + diner.getName() + "\n" + "먹은 메뉴들: "+menuNames + "\n" + "아이의 나이,성별,키,몸무게,활동량(PA):";
+        Integer age=LocalDate.now().getYear()-child.getBday().getYear();
+        Gender gender=child.getGender();
+        Float height=bodyProfile.getHeight();
+        Float weight=bodyProfile.getWeight();
+        Integer eer=bodyProfile.getCaloryEer();
+
+        String prompt = "음식점 카테고리:"+"\n" + " 음식점 이름: " + "\n" + "먹은 메뉴들: " + "\n" + "아이의 나이,성별,키,몸무게,EER:" + "\n" + "위와 같은 형태의 정보를 제공하겠다, 해당 아이가 먹을 양을 고려해서, 먹은 메뉴들을 종합접으로 1끼 기준의 영양소를 알려줘" + "\n" + "추가로 해당 음식점에서 제공 할 것 같은 반찬이나 공기밥이 필요한 음식에 대해서 공기밥을 추가해 그에 맞는 영양소도 적절히 생각해서 영양소에 추가해줘" + "\n" + "음식 섭취량은 아이의 신체정보를 통해 예측해" + "\n" + "답변은 아래와 같은 json 형태(단위는 없이)로 주고 다른 답변은 일절 생성하지마" + "\n" + "{cal: 100kcal, carb: 100g, protein: 100g, fat: 100g, vitA: 100microgram, vitC: 100mg, ribof: 100mg, thiam: 100mg, iron: 100mg, calcium: 100mg}";
+        String inputText = "음식점 카테고리: " + diner.getCategory() + "\n" + " 음식점 이름: " + diner.getName() + "\n" + "먹은 메뉴들: "+menuNames + "\n" + "아이의 나이,성별(남1,여2),키,몸무게,EER: " + age + "세, " + gender +" , " + height + "cm, " + weight + "kg, " + eer + "kcal";
+
+        log.info("ChatGPT API 요청: {}", inputText);
 
         // OpenAI API에 보낼 요청 바디 생성
         Map<String, Object> requestPayload = new HashMap<>();
@@ -190,6 +205,7 @@ public class NutService {
         ));
         // 응답 길이 설정
         requestPayload.put("max_tokens", 1000);  // 응답의 최대 토큰 수
+        requestPayload.put("temperature", 0.2);  // 다음 토큰을 선택할 때 사용할 무작위성 정도
 
         try {
             // HTTP 요청 생성
@@ -207,6 +223,7 @@ public class NutService {
                 JsonNode root = mapper.readTree(response.getBody());
                 String generatedText = root.path("choices").get(0).path("message").path("content").asText();
 //              이부분에서 응답을 받아서 처리하면 됩니다.
+                log.info("ChatGPT API 요청 결과: {}", generatedText);
 
 
             } else {

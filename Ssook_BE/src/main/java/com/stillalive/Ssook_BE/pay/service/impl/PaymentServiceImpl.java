@@ -6,6 +6,7 @@ import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.menu.repository.MenuRepository;
 import com.stillalive.Ssook_BE.menu.service.MenuNutService;
+import com.stillalive.Ssook_BE.nut.service.NutService;
 import com.stillalive.Ssook_BE.pay.dto.*;
 import com.stillalive.Ssook_BE.pay.repository.BalanceRepository;
 import com.stillalive.Ssook_BE.pay.repository.CardRepository;
@@ -42,6 +43,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final MenuRepository menuRepository;
 //    private final MenuNutService menuNutService;
     private final JWTUtil jwtUtil;
+    private final NutService nutService;
 
 
 
@@ -133,6 +135,7 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("dto의 paydetails: {}", dto.getPayDetails());
 
         // TODO: MenuNut 조회 또는 생성 (chabs)
+        nutService.genrateNutFromGPT(dto,child);
 
         // 10. 결제 내역 저장
         ChildHistory childHistory = createHistory(dto, card, cardPrice, pointPrice);
