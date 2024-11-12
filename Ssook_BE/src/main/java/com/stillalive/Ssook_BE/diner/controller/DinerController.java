@@ -31,7 +31,7 @@ public class DinerController {
                 ApiResponse.of(
                         200,
                         "OK",
-                        "선한영향력가게 목록을 확인합니다.",
+                        "전체 식당 목록을 확인합니다.",
                         dinerListResDto
                 )
         );
@@ -142,8 +142,5 @@ public class DinerController {
                 )
         );
     }
-
-
-
 
 }
