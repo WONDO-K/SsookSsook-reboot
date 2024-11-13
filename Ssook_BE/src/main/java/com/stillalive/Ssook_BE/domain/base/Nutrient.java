@@ -1,12 +1,16 @@
 package com.stillalive.Ssook_BE.domain.base;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
 @Embeddable
 @NoArgsConstructor
+@AllArgsConstructor
 public class Nutrient {
 
     private Float cal;
