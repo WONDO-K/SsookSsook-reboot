@@ -12,4 +12,6 @@ public class NearbyDinerResDto
     private Double lat;
     private Double lng;
     private Float range;    // km 단위
+    private int page;
+    private int size;
 }

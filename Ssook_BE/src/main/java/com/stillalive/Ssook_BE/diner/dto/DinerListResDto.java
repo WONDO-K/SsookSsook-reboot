@@ -10,4 +10,5 @@ import java.util.List;
 public class DinerListResDto {
     private List<DinerResDto> dinerList;
     private Integer totalItems;
+    private Integer totalPages;
 }
