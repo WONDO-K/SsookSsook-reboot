@@ -19,7 +19,7 @@ public class DinerController {
 
     private final DinerService dinerService;
 
-    @Operation(summary = "전체 식당 목록 확인", description = "전체 식당 목록을 확인합니다.")
+    @Operation(summary = "전체 식당 목록 조회", description = "전체 식당 목록을 확인합니다.")
     @GetMapping("")
     public ResponseEntity<ApiResponse<DinerListResDto>> getDinerList(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                                      @RequestParam(defaultValue = "0") int page,
@@ -56,9 +56,11 @@ public class DinerController {
     @Operation(summary = "주변 식당 목록 조회", description = "주변 식당 목록을 조회합니다.")
     @GetMapping("/nearby")
     public ResponseEntity<ApiResponse<DinerListResDto>> getNearbyDiners(@AuthenticationPrincipal CustomUserDetails customUserDetails
-            , @RequestParam Double lat, @RequestParam Double lng, @RequestParam Float range) {
+            , @RequestParam Double lat, @RequestParam Double lng, @RequestParam Float range,
+                                                                        @RequestParam(defaultValue = "0") int page,
+                                                                        @RequestParam(defaultValue = "10") int size) {
 
-        NearbyDinerResDto nearbyDinerResDto = new NearbyDinerResDto(lat, lng, range);
+        NearbyDinerResDto nearbyDinerResDto = new NearbyDinerResDto(lat, lng, range, page, size);
 
         DinerListResDto dinerListResDto = dinerService.getNearbyDiners(nearbyDinerResDto);
 
