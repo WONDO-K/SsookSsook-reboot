@@ -23,10 +23,14 @@ public interface DinerRepository extends JpaRepository<Diner, Integer> {
             "FROM diner " +
             "HAVING distance < :range " +
             "ORDER BY distance",
+            countQuery = "SELECT COUNT(*) FROM diner " +  // Add a count query for total elements
+                    "WHERE (6371 * ACOS(COS(RADIANS(:userLat)) * COS(RADIANS(lat)) * " +
+                    "COS(RADIANS(lng) - RADIANS(:userLng)) + SIN(RADIANS(:userLat)) * SIN(RADIANS(lat)))) < :range",
             nativeQuery = true)
-    List<Diner> findNearbyDiners(@Param("userLat") double userLat,
+    Page<Diner> findNearbyDiners(@Param("userLat") double userLat,
                                  @Param("userLng") double userLng,
-                                 @Param("range") double range);
+                                 @Param("range") double range,
+                                 Pageable pageable);
 
     Page<Diner> findAll(Pageable pageable);
 

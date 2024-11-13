@@ -43,6 +43,7 @@ public class DinerService {
         return DinerListResDto.builder()
                 .dinerList(dinerList)
                 .totalItems((int) dinerPage.getTotalElements())
+                .totalPages(dinerPage.getTotalPages())
                 .build();
     }
 
@@ -51,10 +52,15 @@ public class DinerService {
         Double lat = nearbyDinerResDto.getLat();
         Double lng = nearbyDinerResDto.getLng();
         Float range = nearbyDinerResDto.getRange();
+        int page = nearbyDinerResDto.getPage();
+        int size = nearbyDinerResDto.getSize();
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Diner> dinerPage = dinerRepository.findNearbyDiners(lat, lng, range, pageable);
 
         return DinerListResDto.builder()
                 .dinerList(
-                        dinerRepository.findNearbyDiners(lat, lng, range)
+                        dinerPage.getContent()
                                 .stream()
                                 .map(diner -> DinerResDto.builder()
                                         .dinerId(diner.getId())
@@ -68,7 +74,8 @@ public class DinerService {
                                 )
                                 .collect(Collectors.toList())
                 )
-                .totalItems(dinerRepository.findNearbyDiners(lat, lng, range).size())
+                .totalItems((int)dinerPage.getTotalElements())
+                .totalPages((int)dinerPage.getTotalPages())
                 .build();
     }
 
