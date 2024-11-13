@@ -1,5 +1,6 @@
 package com.stillalive.Ssook_BE.nut.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stillalive.Ssook_BE.diner.repository.DinerRepository;
@@ -54,6 +55,7 @@ public class NutService {
     @Transactional
     public void recordNut(Integer childId, Date date, Meal mealTime, Nutrient nutrient) {
         // 영양소 섭취 기록
+        log.info("영양소 섭취 기록: {}", nutrient);
         NutHistory nutHistory = NutHistory.builder()
                 .child(childRepository.findById(childId)
                         .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_CHILD)))
@@ -63,6 +65,7 @@ public class NutService {
                 .build();
 
         nutHistoryRepository.save(nutHistory);
+        log.info("영양소 섭취 기록 완료: {}", nutHistory);
     }
 
 
@@ -244,6 +247,30 @@ public class NutService {
 //              이부분에서 응답을 받아서 처리하면 됩니다.
                 log.info("ChatGPT API 요청 결과: {}", generatedText);
 
+                generatedText = generatedText.replaceAll("```json", "").replaceAll("```", "").trim();
+
+
+                // 영양소 섭취 기록
+                Map<String, Float> nutrientMap = mapper.readValue(generatedText, new TypeReference<Map<String, Float>>() {});
+
+                log.info("영양소 정보: {}", nutrientMap);
+
+                recordNut(child.getChildId(),
+                        new Date()
+                        , Meal.NONE
+                        , Nutrient.builder()
+                                .cal(nutrientMap.get("cal"))
+                                .carb(nutrientMap.get("carb"))
+                                .protein(nutrientMap.get("protein"))
+                                .fat(nutrientMap.get("fat"))
+                                .vitA(nutrientMap.get("vitA"))
+                                .vitC(nutrientMap.get("vitC"))
+                                .ribof(nutrientMap.get("ribof"))
+                                .thiam(nutrientMap.get("thiam"))
+                                .iron(nutrientMap.get("iron"))
+                                .calcium(nutrientMap.get("calcium"))
+                                .build()
+                );
 
             } else {
                 log.info("ChatGPT API 요청 중 오류 발생: {}", response.getStatusCode());
