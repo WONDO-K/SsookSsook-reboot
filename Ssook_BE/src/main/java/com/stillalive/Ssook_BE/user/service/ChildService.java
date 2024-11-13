@@ -172,6 +172,8 @@ public class ChildService {
                 .createdAt(child.getCreatedAt())
                 .updatedAt(child.getUpdatedAt())
                 .isParent(false)
+                .schoolCode(child.getSchool().getCode())
+                .point(child.getPoint())
                 .build();
     }
 
