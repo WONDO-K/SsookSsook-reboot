@@ -21,5 +21,7 @@ public class UserInfoResDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Boolean isParent;
+    private Integer schoolCode;
+    private Integer point;
 
 }
