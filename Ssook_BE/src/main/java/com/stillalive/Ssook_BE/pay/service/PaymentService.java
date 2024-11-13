@@ -11,6 +11,8 @@ public interface PaymentService {
 
     void processPayment(PaymentReqDto paymentReqDto, Child child);
 
+    void nfcProcessPayment(NfcPaymentReqDto paymentReqDto, Child child);
+
     MyCardResDto getMyCard(int childId);
 
     void registerCard(RegisterCardReqDto dto, int childId);

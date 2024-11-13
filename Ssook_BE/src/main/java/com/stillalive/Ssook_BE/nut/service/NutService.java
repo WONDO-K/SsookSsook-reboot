@@ -18,6 +18,7 @@ import com.stillalive.Ssook_BE.nut.dto.IntakeNutResDto;
 import com.stillalive.Ssook_BE.nut.dto.WeekIntakeNutResDto;
 import com.stillalive.Ssook_BE.nut.repository.NutHistoryRepository;
 import com.stillalive.Ssook_BE.pay.dto.PaymentReqDto;
+import com.stillalive.Ssook_BE.pay.dto.PaymentRequest;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.BodyProfileRepository;
 import lombok.RequiredArgsConstructor;
@@ -193,13 +194,13 @@ public class NutService {
     }
 
     // GPT를 이용하여 영양 정보 생성
-    public void genrateNutFromGPT(PaymentReqDto paymentReqDto, Child child) {
+    public void genrateNutFromGPT(PaymentRequest paymentReqDto, Child child) {
         // GPT를 이용하여 영양 정보 생성
         Integer diner_id=paymentReqDto.getDinerId();
         Diner diner = dinerRepository.findById(diner_id)
                 .orElseThrow(() -> new SsookException(ErrorCode.DINER_NOT_FOUND));
         String menuNames = paymentReqDto.getPayDetails().stream()
-                .map(PaymentReqDto.PayDetailDto::getMenuName)
+                .map(payDetailDto -> payDetailDto.getMenuName())
                 .collect(Collectors.joining(", "));
         BodyProfile bodyProfile = bodyProfileRepository.findByChild(child)
                 .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_BODYPROFILE));

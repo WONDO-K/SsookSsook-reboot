@@ -103,6 +103,16 @@ public class PayController {
         return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "결제가 완료되었습니다.", null));
     }
 
+    @PostMapping("/nfc")
+    @Operation(summary = "NFC 결제 처리", description = "NFC 결제 처리 API")
+    public ResponseEntity<ApiResponse<?>> processPayment(@RequestBody NfcPaymentReqDto dto) {
+
+        Child child = childRepository.findById(dto.getChildId()).orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_CHILD));
+        log.info("결제 요청 - 사용자 ID: {}, 결제 금액: {}", dto.getChildId(), dto.getAmount());
+        paymentService.nfcProcessPayment(dto, child);
+        return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "NFC 결제가 완료되었습니다.", null));
+    }
+
     /**
         * 내 카드 조회 API
      * @return ResponseEntity<MyCardResDto>

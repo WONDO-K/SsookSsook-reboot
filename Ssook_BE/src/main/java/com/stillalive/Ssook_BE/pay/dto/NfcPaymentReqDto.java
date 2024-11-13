@@ -12,7 +12,10 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Getter
-public class PaymentReqDto implements PaymentRequest{
+public class NfcPaymentReqDto implements PaymentRequest{
+
+    @NotNull(message = "학생 ID는 필수입니다.")
+    private int childId;
 
     @NotNull(message = "식당 ID는 필수입니다.")
     private int dinerId;
@@ -24,6 +27,7 @@ public class PaymentReqDto implements PaymentRequest{
     @NotNull(message = "주문한 메뉴는 필수입니다.")
     private List<PayDetailDto> payDetails; // 메뉴 ID와 수량 정보를 담은 리스트
 
-    @NotNull(message = "결제 유형은 필수입니다.")
-    private PayType payType; // 결제 유형
+    @Builder.Default
+    private PayType payType = PayType.PAYMENT; // 결제 유형
+
 }
