@@ -139,7 +139,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         log.info("dto의 paydetails: {}", dto.getPayDetails());
 
-        // TODO: MenuNut 조회 또는 생성 (chabs)
+        // 메뉴별 영양소 정보 저장, NutHistory 저장
         nutService.genrateNutFromGPT(dto,child);
 
         // 10. 결제 내역 저장
