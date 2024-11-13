@@ -23,5 +23,7 @@ public class UserInfoResDto {
     private Boolean isParent;
     private Integer schoolCode;
     private Integer point;
+    private Float height;
+    private Float weight;
 
 }

@@ -162,6 +162,11 @@ public class ChildService {
             throw new SsookException(ErrorCode.NOT_FOUND_CHILD);
         });
 
+        BodyProfile bodyProfile = child.getBodyProfile();
+        if (bodyProfile == null) {
+            throw new SsookException(ErrorCode.NOT_FOUND_BODYPROFILE);
+        }
+
         return UserInfoResDto.builder()
                 .userId(child.getChildId())
                 .name(child.getName())
@@ -174,6 +179,8 @@ public class ChildService {
                 .isParent(false)
                 .schoolCode(child.getSchool().getCode())
                 .point(child.getPoint())
+                .height(bodyProfile.getHeight())
+                .weight(bodyProfile.getWeight())
                 .build();
     }
 
