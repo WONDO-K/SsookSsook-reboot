@@ -77,3 +77,4 @@ springdoc:
 # 챗지피티 설정
 chatgpt:
     key: ${CHATGPT_API_KEY}  # 환경 변수로 대체
+    key2: ${CHATGPT_API_KEY2}  # 환경 변수로 대체
