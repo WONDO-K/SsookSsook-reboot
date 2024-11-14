@@ -48,19 +48,18 @@ public class PaymentServiceImpl implements PaymentService {
     // 로그
     private static final Logger log = LoggerFactory.getLogger(PaymentServiceImpl.class);
 
-    @Transactional // balance와 user의 데이터를 변경하는 트랜잭션 처리
+    @Transactional
     public void processPayment(PaymentReqDto dto, Child child) {
 
+        // 1. 카드 정보 조회
         Card card = cardRepository.findByChild(child)
                 .orElseThrow(() -> {
                     log.error("카드 정보 조회 실패 - 자녀 ID: {}", child.getChildId());
                     return new SsookException(ErrorCode.CARD_NOT_FOUND);
                 });
-
         log.info("카드 정보 조회 성공 - 카드 ID: {}", card.getId());
 
-        // 2. 카드 만료 여부 확인
-        // 현재 날짜를 기준으로 유효기간 확인
+        // 2. 카드 유효기간 확인
         YearMonth now = YearMonth.now();
         if (card.getExpirationDate().isBefore(now)) {
             throw new SsookException(ErrorCode.CARD_EXPIRED);
@@ -74,11 +73,8 @@ public class PaymentServiceImpl implements PaymentService {
         }
         log.info("카드 활성화 확인 완료 - 카드 ID: {}", card.getId());
 
-        // 4. 유저 정보 확인
-        int paymentAmount = dto.getAmount(); // 결제해야 하는 금액
-
-        // 5. 결제 금액이 0인 경우 잔액 확인 없이 결제 처리
-        if (dto.getAmount() == 0) {
+        int paymentAmount = dto.getAmount(); // 결제 요청 금액
+        if (paymentAmount == 0) { // 결제 금액이 0인 경우 처리
             log.info("결제 금액 0원 - 잔액 확인 없이 결제 처리 진행");
             ChildHistory childHistory = createHistory(dto, card, 0, 0);
             childHistoryRepository.save(childHistory);
@@ -86,81 +82,77 @@ public class PaymentServiceImpl implements PaymentService {
             return;
         }
 
-        int maxCardLimit = 8000; // 아동 급식 카드 일일 결제 한도
+        int singleTransactionLimit = 8000; // 1회 결제 한도
+        int dailyTransactionLimit = 24000; // 일일 결제 한도
 
-        // 6. 잔액 및 포인트 확인 및 결제 처리
+        // 4. 잔액 및 포인트 확인을 위한 카드 잔액 조회
         Balance balance = balanceRepository.findByCard(card)
                 .orElseThrow(() -> {
                     log.error("잔액 정보 조회 실패 - 카드 ID: {}", card.getId());
                     return new SsookException(ErrorCode.INSUFFICIENT_BALANCE);
                 });
-
         log.info("잔액 정보 조회 성공 - 카드 ID: {}, 잔액: {}", card.getId(), balance.getCurrentBalance());
 
-        // 7. 일일 한도 검사
-        int dailySpent = balance.getDailySpentAmount();
-        if ((dailySpent + paymentAmount) > 24000) {
-            log.error("일일 한도 초과 - 누적 지출 금액: {}", dailySpent + paymentAmount);
-            throw new SsookException(ErrorCode.EXCEEDS_DAILY_LIMIT);
+        int dailySpent = balance.getDailySpentAmount(); // 오늘 사용한 카드 결제 금액
+        int remainingDailyLimit = dailyTransactionLimit - dailySpent; // 오늘 남은 일일 결제 한도
+
+        int currentBalance = balance.getCurrentBalance(); // 현재 카드 잔액
+        int cardMaxAvailableAmount = Math.min(currentBalance, singleTransactionLimit); // 카드로 결제 가능한 최대 금액 (잔액과 1회 결제 한도 중 작은 값)
+        int cardPaymentAmount = 0;
+        int pointRequiredAmount = paymentAmount;
+
+        // 5. 결제 가능한 카드 금액 설정
+        if (remainingDailyLimit > 0) {
+            cardPaymentAmount = Math.min(paymentAmount, Math.min(remainingDailyLimit, cardMaxAvailableAmount));
+            pointRequiredAmount = paymentAmount - cardPaymentAmount;
         }
 
-        log.info("일일 한도 확인 완료 - 누적 지출 금액: {}", dailySpent + paymentAmount);
-
-        int currentBalance = balance.getCurrentBalance();
-        int availableCardAmount = Math.min(currentBalance, maxCardLimit); // 카드로 결제 가능한 최대 금액 (잔액과 8000원 한도 중 작은 값)
-        int cardPrice = Math.min(paymentAmount, availableCardAmount); // 카드로 결제 가능한 금액
-        int pointPrice = paymentAmount - cardPrice; // 부족한 금액만 포인트로 결제
-
-        // 포인트 부족 확인
-        if (pointPrice > child.getPoint()) {
-            log.error("포인트 부족 - 필요 포인트: {}, 현재 포인트: {}", pointPrice, child.getPoint());
+        // 6. 포인트 잔액 부족 확인
+        if (pointRequiredAmount > child.getPoint()) {
+            log.error("포인트 부족 - 필요 포인트: {}, 현재 포인트: {}", pointRequiredAmount, child.getPoint());
             throw new SsookException(ErrorCode.INSUFFICIENT_BALANCE);
         }
 
-// 8. 카드 잔액 및 포인트 차감
-        if (paymentAmount <= availableCardAmount) {
-            balance.setCurrentBalance(currentBalance - paymentAmount);
-            cardPrice = paymentAmount;
-            log.info("잔액 차감 완료 - 차감 금액: {}", cardPrice);
-        } else {
-            balance.setCurrentBalance(currentBalance - availableCardAmount);
-            cardPrice = availableCardAmount;
-            pointPrice = paymentAmount - availableCardAmount; // 필요한 포인트 금액을 직접 계산
-            child.setPoint(child.getPoint() - pointPrice);
-            log.info("잔액 및 포인트 차감 완료 - 카드 사용 금액: {}, 포인트 사용 금액: {}", cardPrice, pointPrice);
+        // 7. 카드 잔액 및 포인트 차감
+        if (cardPaymentAmount > 0) { // 카드 결제 금액이 있는 경우 카드 잔액 차감
+            balance.setCurrentBalance(currentBalance - cardPaymentAmount);
+            log.info("잔액 차감 완료 - 차감 금액: {}", cardPaymentAmount);
+        }
+        if (pointRequiredAmount > 0) { // 포인트로 결제하는 금액이 있는 경우 포인트 차감
+            child.setPoint(child.getPoint() - pointRequiredAmount);
+            log.info("포인트 차감 완료 - 차감 금액: {}", pointRequiredAmount);
         }
 
-        // 9. 일일 지출 금액, 최근 사용 날짜 및 갱신 시간 업데이트
-        balance.setDailySpentAmount(dailySpent + paymentAmount);
-        balance.setLastSpentDate(Timestamp.valueOf(LocalDateTime.now()));
-        balance.setLastUpdated(new Timestamp(System.currentTimeMillis()));
-        balanceRepository.save(balance);
-        childRepository.save(child);
+        // 8. 일일 지출 금액, 최근 사용 날짜 및 갱신 시간 업데이트
+        balance.setDailySpentAmount(dailySpent + cardPaymentAmount); // 일일 지출 금액 업데이트
+        balance.setLastSpentDate(Timestamp.valueOf(LocalDateTime.now())); // 최근 사용 날짜 업데이트
+        balance.setLastUpdated(new Timestamp(System.currentTimeMillis())); // 데이터 갱신 시간 업데이트
+        balanceRepository.save(balance); // 변경된 잔액 저장
+        childRepository.save(child); // 변경된 포인트 잔액 저장
 
         log.info("dto의 paydetails: {}", dto.getPayDetails());
 
-        // 메뉴별 영양소 정보 저장, NutHistory 저장
-        nutService.genrateNutFromGPT(dto,child);
+        // 메뉴별 영양소 정보 저장, NutHistory 생성
+        nutService.genrateNutFromGPT(dto, child);
 
-        // 10. 결제 내역 저장
-        ChildHistory childHistory = createHistory(dto, card, cardPrice, pointPrice);
+        // 9. 결제 내역 저장
+        ChildHistory childHistory = createHistory(dto, card, cardPaymentAmount, pointRequiredAmount);
         childHistoryRepository.save(childHistory);
-        log.info("결제 내역 저장 완료 - 카드 사용 금액: {}, 포인트 사용 금액: {}", cardPrice, pointPrice);
+        log.info("결제 내역 저장 완료 - 카드 사용 금액: {}, 포인트 사용 금액: {}", cardPaymentAmount, pointRequiredAmount);
     }
+
 
     @Override
     public void nfcProcessPayment(NfcPaymentReqDto dto, Child child) {
-
+        // 1. 카드 정보 조회
         Card card = cardRepository.findByChild(child)
                 .orElseThrow(() -> {
                     log.error("카드 정보 조회 실패 - 자녀 ID: {}", child.getChildId());
                     return new SsookException(ErrorCode.CARD_NOT_FOUND);
                 });
-
         log.info("카드 정보 조회 성공 - 카드 ID: {}", card.getId());
 
-        // 2. 카드 만료 여부 확인
-        // 현재 날짜를 기준으로 유효기간 확인
+        // 2. 카드 유효기간 확인
         YearMonth now = YearMonth.now();
         if (card.getExpirationDate().isBefore(now)) {
             throw new SsookException(ErrorCode.CARD_EXPIRED);
@@ -174,11 +166,8 @@ public class PaymentServiceImpl implements PaymentService {
         }
         log.info("카드 활성화 확인 완료 - 카드 ID: {}", card.getId());
 
-        // 4. 유저 정보 확인
-        int paymentAmount = dto.getAmount(); // 결제해야 하는 금액
-
-        // 5. 결제 금액이 0인 경우 잔액 확인 없이 결제 처리
-        if (dto.getAmount() == 0) {
+        int paymentAmount = dto.getAmount(); // 결제 요청 금액
+        if (paymentAmount == 0) { // 결제 금액이 0인 경우 처리
             log.info("결제 금액 0원 - 잔액 확인 없이 결제 처리 진행");
             ChildHistory childHistory = createHistory(dto, card, 0, 0);
             childHistoryRepository.save(childHistory);
@@ -186,66 +175,63 @@ public class PaymentServiceImpl implements PaymentService {
             return;
         }
 
-        int maxCardLimit = 8000; // 아동 급식 카드 일일 결제 한도
+        int singleTransactionLimit = 8000; // 1회 결제 한도
+        int dailyTransactionLimit = 24000; // 일일 결제 한도
 
-        // 6. 잔액 및 포인트 확인 및 결제 처리
+        // 4. 잔액 및 포인트 확인을 위한 카드 잔액 조회
         Balance balance = balanceRepository.findByCard(card)
                 .orElseThrow(() -> {
                     log.error("잔액 정보 조회 실패 - 카드 ID: {}", card.getId());
                     return new SsookException(ErrorCode.INSUFFICIENT_BALANCE);
                 });
-
         log.info("잔액 정보 조회 성공 - 카드 ID: {}, 잔액: {}", card.getId(), balance.getCurrentBalance());
 
-        // 7. 일일 한도 검사
-        int dailySpent = balance.getDailySpentAmount();
-        if ((dailySpent + paymentAmount) > 24000) {
-            log.error("일일 한도 초과 - 누적 지출 금액: {}", dailySpent + paymentAmount);
-            throw new SsookException(ErrorCode.EXCEEDS_DAILY_LIMIT);
+        int dailySpent = balance.getDailySpentAmount(); // 오늘 사용한 카드 결제 금액
+        int remainingDailyLimit = dailyTransactionLimit - dailySpent; // 오늘 남은 일일 결제 한도
+
+        int currentBalance = balance.getCurrentBalance(); // 현재 카드 잔액
+        int cardMaxAvailableAmount = Math.min(currentBalance, singleTransactionLimit); // 카드로 결제 가능한 최대 금액 (잔액과 1회 결제 한도 중 작은 값)
+        int cardPaymentAmount = 0;
+        int pointRequiredAmount = paymentAmount;
+
+        // 5. 결제 가능한 카드 금액 설정
+        if (remainingDailyLimit > 0) {
+            cardPaymentAmount = Math.min(paymentAmount, Math.min(remainingDailyLimit, cardMaxAvailableAmount));
+            pointRequiredAmount = paymentAmount - cardPaymentAmount;
         }
 
-        log.info("일일 한도 확인 완료 - 누적 지출 금액: {}", dailySpent + paymentAmount);
-
-        int currentBalance = balance.getCurrentBalance();
-        int availableCardAmount = Math.min(currentBalance, maxCardLimit); // 카드로 결제 가능한 최대 금액 (잔액과 8000원 한도 중 작은 값)
-        int cardPrice = Math.min(paymentAmount, availableCardAmount); // 카드로 결제 가능한 금액
-        int pointPrice = paymentAmount - cardPrice; // 부족한 금액만 포인트로 결제
-
-        // 포인트 부족 확인
-        if (pointPrice > child.getPoint()) {
-            log.error("포인트 부족 - 필요 포인트: {}, 현재 포인트: {}", pointPrice, child.getPoint());
+        // 6. 포인트 잔액 부족 확인
+        if (pointRequiredAmount > child.getPoint()) {
+            log.error("포인트 부족 - 필요 포인트: {}, 현재 포인트: {}", pointRequiredAmount, child.getPoint());
             throw new SsookException(ErrorCode.INSUFFICIENT_BALANCE);
         }
 
-// 8. 카드 잔액 및 포인트 차감
-        if (paymentAmount <= availableCardAmount) {
-            balance.setCurrentBalance(currentBalance - paymentAmount);
-            cardPrice = paymentAmount;
-            log.info("잔액 차감 완료 - 차감 금액: {}", cardPrice);
-        } else {
-            balance.setCurrentBalance(currentBalance - availableCardAmount);
-            cardPrice = availableCardAmount;
-            pointPrice = paymentAmount - availableCardAmount; // 필요한 포인트 금액을 직접 계산
-            child.setPoint(child.getPoint() - pointPrice);
-            log.info("잔액 및 포인트 차감 완료 - 카드 사용 금액: {}, 포인트 사용 금액: {}", cardPrice, pointPrice);
+        // 7. 카드 잔액 및 포인트 차감
+        if (cardPaymentAmount > 0) { // 카드 결제 금액이 있는 경우 카드 잔액 차감
+            balance.setCurrentBalance(currentBalance - cardPaymentAmount);
+            log.info("잔액 차감 완료 - 차감 금액: {}", cardPaymentAmount);
+        }
+        if (pointRequiredAmount > 0) { // 포인트로 결제하는 금액이 있는 경우 포인트 차감
+            child.setPoint(child.getPoint() - pointRequiredAmount);
+            log.info("포인트 차감 완료 - 차감 금액: {}", pointRequiredAmount);
         }
 
-        // 9. 일일 지출 금액, 최근 사용 날짜 및 갱신 시간 업데이트
-        balance.setDailySpentAmount(dailySpent + paymentAmount);
-        balance.setLastSpentDate(Timestamp.valueOf(LocalDateTime.now()));
-        balance.setLastUpdated(new Timestamp(System.currentTimeMillis()));
-        balanceRepository.save(balance);
-        childRepository.save(child);
+        // 8. 일일 지출 금액, 최근 사용 날짜 및 갱신 시간 업데이트
+        balance.setDailySpentAmount(dailySpent + cardPaymentAmount); // 일일 지출 금액 업데이트
+        balance.setLastSpentDate(Timestamp.valueOf(LocalDateTime.now())); // 최근 사용 날짜 업데이트
+        balance.setLastUpdated(new Timestamp(System.currentTimeMillis())); // 데이터 갱신 시간 업데이트
+        balanceRepository.save(balance); // 변경된 잔액 저장
+        childRepository.save(child); // 변경된 포인트 잔액 저장
 
         log.info("dto의 paydetails: {}", dto.getPayDetails());
 
-        // 메뉴별 영양소 정보 저장, NutHistory 저장
-        nutService.genrateNutFromGPT(dto,child);
+        // 메뉴별 영양소 정보 저장, NutHistory 생성
+        nutService.genrateNutFromGPT(dto, child);
 
-        // 10. 결제 내역 저장
-        ChildHistory childHistory = createHistory(dto, card, cardPrice, pointPrice);
+        // 9. 결제 내역 저장
+        ChildHistory childHistory = createHistory(dto, card, cardPaymentAmount, pointRequiredAmount);
         childHistoryRepository.save(childHistory);
-        log.info("결제 내역 저장 완료 - 카드 사용 금액: {}, 포인트 사용 금액: {}", cardPrice, pointPrice);
+        log.info("결제 내역 저장 완료 - 카드 사용 금액: {}, 포인트 사용 금액: {}", cardPaymentAmount, pointRequiredAmount);
     }
 
     @Override
