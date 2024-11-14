@@ -31,10 +31,10 @@ public class Report {
     @Column(name = "end_date", nullable = false)
     private LocalDate date;
 
-    @Column(name = "diet", nullable = false)
+    @Column(name = "diet", nullable = false, columnDefinition = "TEXT")
     private String diet;
 
-    @Column(name = "advice", nullable = false)
+    @Column(name = "advice", nullable = false, columnDefinition = "TEXT")
     private String advice;
 
 }

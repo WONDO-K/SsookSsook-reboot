@@ -11,6 +11,8 @@ import com.stillalive.Ssook_BE.exception.SsookException;
 import com.stillalive.Ssook_BE.nut.dto.WeekIntakeNutResDto;
 import com.stillalive.Ssook_BE.nut.repository.NutrientRequirementRepository;
 import com.stillalive.Ssook_BE.nut.service.NutService;
+import com.stillalive.Ssook_BE.report.dto.ReportListResDto;
+import com.stillalive.Ssook_BE.report.dto.ReportResDto;
 import com.stillalive.Ssook_BE.report.repository.ReportRepository;
 import com.stillalive.Ssook_BE.user.repository.BodyProfileRepository;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
@@ -46,14 +48,15 @@ public class ReportService {
     private final String gptApiUrl = "https://api.openai.com/v1/chat/completions";
 
 //  현재 날짜에서 부터 일주일간에 리포트 기록이 없으면 생성하고 모든 리스트 조회 있으면 모든 리스트 조회
-    public void generateReportAndGetList(Integer child_id) {
+    @Transactional
+    public ReportListResDto generateReportAndGetList(Integer child_id) {
 
         Optional<Child> child = childRepository.findById(child_id);
         LocalDate today = LocalDate.now();
 
 //      리포트의 end_date값이 오늘부터 이전 7일까지의 날짜중에 있는 리포트가 있는지 없는지
         boolean isExist = reportRepository.findByChild(child.get()).stream()
-                .anyMatch(report -> report.getDate().isAfter(today.minusDays(7)) && report.getDate().isBefore(today));
+                .anyMatch(report -> report.getDate().isAfter(today.minusDays(7)) && !report.getDate().isAfter(today));
 
 //      없으면 주간 리포트 생성
         if (!isExist) {
@@ -73,12 +76,10 @@ public class ReportService {
             Float calcium= weekIntakeNutResDto.getCalcium()*mutiple;
             Float iron= weekIntakeNutResDto.getIron()*mutiple;
             Float thiam = weekIntakeNutResDto.getThiam()*mutiple;
-
 //          영양소
 //          아이의 생일로 나이 계산하기
             Integer age = today.getYear() - child.get().getBday().getYear();
             Optional<NutrientRequirement> nutrientRequirement = nutrientRequirementRepository.findByGenderAndAge(child.get().getGender(), age);
-
 //          영양소비율이 80%~120% 사이면 정상
 //          영양소비율이 80% 이하면 부족
 //          영양소비율이 120% 이상이면 과다
@@ -95,7 +96,11 @@ public class ReportService {
                     "답변은 다른 답변없이 json형식으로만 답해줘" +
                     "예시 input : {carb : normal, protein : low, vitA : high, vitC : normal, ribof : low, calcium : high, iron : normal, thiam : high}\n" +
                     "예시 output : { diet : '쌀보리밥, 표고부추달걀국, 마파두부, 애호박볶음, 코다리튀김,배추김치', advice : '단백질 섭취를 충분히 하시는 것이 중요합니다. 따라서 식사에서 고단백질 음식들을 추천 드렸습니다. 균형잡힌 식단을 유지하고 규칙적인 운동을 통해 건강을 향상 시키시길 바합니다. 충분한 수분 섭취와 적절한 휴식도 잊지 않으시길 바랍니다. 기온이 떨어짐에 따라 찬 음식 보다는 따뜻하고 열을 유지하는 음식들을 먹는 것을 권해드립니다.'}";
-            String inputText = "{carb : "+carbStatus+", protein : "+proteinStatus+", vitA : "+vitAStatus+", vitC : "+vitCStatus+", ribof : "+ribofStatus+", calcium : "+calciumStatus+", iron : "+ironStatus+", thiam : "+thiamStatus+"}";
+            String inputText = String.format(
+                    "{\"carb\": \"%s\", \"protein\": \"%s\", \"vitA\": \"%s\", \"vitC\": \"%s\", \"ribof\": \"%s\", \"calcium\": \"%s\", \"iron\": \"%s\", \"thiam\": \"%s\"}",
+                    carbStatus, proteinStatus, vitAStatus, vitCStatus, ribofStatus, calciumStatus, ironStatus, thiamStatus
+            );
+
 
             log.info("ChatGPT API 요청: {}", inputText);
 
@@ -111,7 +116,7 @@ public class ReportService {
             ));
             // 응답 길이 설정
             requestPayload.put("max_tokens", 1000);  // 응답의 최대 토큰 수
-            requestPayload.put("temperature", 0.2);  // 다음 토큰을 선택할 때 사용할 무작위성 정도
+            requestPayload.put("temperature", 0.7);  // 다음 토큰을 선택할 때 사용할 무작위성 정도
 
             try {
                 // HTTP 요청 생성
@@ -154,26 +159,33 @@ public class ReportService {
                 // 예외 발생 시 오류 메시지 던짐
                 log.info("ChatGPT API 요청 중 오류 발생: {}", e.getMessage());
             }
-
-
-
-
-
-
-
-
-
-
-            genertaeReport(child_id, today);
         }
 
 //        리포트 리스트 조회
-        List<Report> reports = reportRepository.findByChild(child.get());
+        List<ReportResDto> reports = reportRepository.findByChild(child.get()).stream()
+                .map(report -> ReportResDto.builder()
+                        .report_id(report.getId())
+                        .end_date(report.getDate())
+                        .diet(report.getDiet())
+                        .advice(report.getAdvice())
+                        .build())
+                .toList();
 
+        return ReportListResDto.builder()
+                .reports(reports)
+                .build();
     }
 
-    private void genertaeReport(Integer childId, LocalDate today) {
+    //  리포트 상세조회
+    public ReportResDto getReportDetail(Integer report_id) {
+        Report report = reportRepository.findById(report_id)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_REPORT));
+
+        return ReportResDto.builder()
+                .report_id(report.getId())
+                .end_date(report.getDate())
+                .diet(report.getDiet())
+                .advice(report.getAdvice())
+                .build();
     }
-
-
 }
