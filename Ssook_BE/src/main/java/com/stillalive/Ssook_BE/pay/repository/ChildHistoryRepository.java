@@ -17,4 +17,5 @@ public interface ChildHistoryRepository extends JpaRepository<ChildHistory, Inte
                                                  @Param("startDate") LocalDateTime startDate,
                                                  @Param("endDate") LocalDateTime endDate);
 
+
 }

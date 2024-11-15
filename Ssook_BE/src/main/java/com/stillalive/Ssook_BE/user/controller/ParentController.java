@@ -1,6 +1,11 @@
 package com.stillalive.Ssook_BE.user.controller;
 
 import com.stillalive.Ssook_BE.common.ApiResponse;
+import com.stillalive.Ssook_BE.domain.ChildHistory;
+import com.stillalive.Ssook_BE.exception.ErrorCode;
+import com.stillalive.Ssook_BE.exception.SsookException;
+import com.stillalive.Ssook_BE.pay.controller.PayController;
+import com.stillalive.Ssook_BE.pay.dto.ChildHistoryResDto;
 import com.stillalive.Ssook_BE.pay.dto.ParentHistoryResDto;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
 import com.stillalive.Ssook_BE.user.dto.*;
@@ -10,6 +15,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,6 +31,8 @@ import java.util.List;
 public class ParentController {
 
     private final ParentService parentService;
+    private static final Logger log = LoggerFactory.getLogger(ParentController.class);
+
 
     @Operation(summary = "부모 회원가입", description = "부모 회원가입을 진행합니다.")
     @PostMapping("/join")
@@ -191,5 +200,44 @@ public class ParentController {
                 ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "거래내역 조회 성공", paymentList));
     }
 
+    @GetMapping("/history/list/{childId}")
+    @Operation(summary = "자녀 거래 내역 리스트 조회", description = "자녀 거래 내역 리스트 조회 API")
+    public ResponseEntity<ApiResponse<?>> getChildPaymentList(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable(value = "childId") Integer childId,
+            @RequestParam(value = "months", required = false) Integer months) {
+
+        int parentId = userDetails.getParentId();
+        List<ChildHistoryResDto> paymentList = parentService.getChildPaymentList(parentId, childId, months);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "거래내역 조회 성공", paymentList));
+    }
+
+    @GetMapping("/history/detail/{historyId}")
+    @Operation(summary = "자녀 거래내역 상세 조회", description = "자녀 거래내역 상세 조회 API")
+    public ResponseEntity<ApiResponse<?>> getChildPaymentDetail(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(value = "childId") Integer childId,
+            @PathVariable(value = "historyId") Integer historyId) {
+
+        int userId;
+        boolean isParent = userDetails.isParent();
+
+        if (isParent) {
+            userId = userDetails.getParentId();
+        } else {
+           log.info("접근자 타입 확인 - 자녀 유저, 자녀 유저는 자녀용 자녀 거래내역 조회 API를 사용해야 합니다.");
+              throw new SsookException(ErrorCode.ACCESS_DENIED);
+        }
+
+        ChildHistory paymentDetail = parentService.getChildPaymentDetail(userId, childId ,historyId);
+
+        ChildHistoryResDto paymentDetailDto = ChildHistoryResDto.toDto(paymentDetail);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "거래내역 상세 조회 성공", paymentDetailDto));
+
+    }
 
 }

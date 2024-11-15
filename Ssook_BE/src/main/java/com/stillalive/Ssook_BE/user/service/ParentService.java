@@ -6,8 +6,10 @@ import com.stillalive.Ssook_BE.enums.PayType;
 import com.stillalive.Ssook_BE.enums.Progress;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
+import com.stillalive.Ssook_BE.pay.dto.ChildHistoryResDto;
 import com.stillalive.Ssook_BE.pay.dto.ParentHistoryResDto;
 import com.stillalive.Ssook_BE.pay.repository.BalanceRepository;
+import com.stillalive.Ssook_BE.pay.repository.ChildHistoryRepository;
 import com.stillalive.Ssook_BE.pay.repository.ParentHistoryRepository;
 import com.stillalive.Ssook_BE.user.dto.*;
 import com.stillalive.Ssook_BE.user.repository.BodyProfileRepository;
@@ -46,6 +48,7 @@ public class ParentService {
     private final BalanceRepository balanceRepository;
 
     private final ParentHistoryRepository parentHistoryRepository;
+    private final ChildHistoryRepository childHistoryRepository;
 
 
     @Transactional
@@ -183,8 +186,10 @@ public class ParentService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 자녀 ID입니다: " + dto.getChildId()));
 
         // 부모-자식 관계 확인
-        familyRelationRepository.findByParentAndChildAndStatus(parent, child, Progress.YES)
-                .orElseThrow(() -> new IllegalStateException("부모와 자녀 관계가 존재하지 않습니다."));
+        List<FamilyRelation> relations = familyRelationRepository.findByParentAndChildAndStatus(parent, child, Progress.YES);
+        if (relations.isEmpty()) {
+            throw new SsookException(ErrorCode.NOT_PARENT_CHILD);
+        }
 
         if (parent.getPoint() >= dto.getAmount()) {
             parent.setPoint(parent.getPoint() - dto.getAmount());
@@ -241,8 +246,10 @@ public class ParentService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 자녀 ID입니다: " + childId));
 
         // 부모-자식 관계 확인
-        familyRelationRepository.findByParentAndChildAndStatus(parent, child, Progress.YES)
-                .orElseThrow(() -> new IllegalStateException("부모와 자녀 관계가 존재하지 않습니다."));
+        List<FamilyRelation> relations = familyRelationRepository.findByParentAndChildAndStatus(parent, child, Progress.YES);
+        if (relations.isEmpty()) {
+            throw new SsookException(ErrorCode.NOT_PARENT_CHILD);
+        }
 
         return MyChildPointResDto.builder()
                 .childId(child.getChildId())
@@ -258,8 +265,10 @@ public class ParentService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 자녀 ID입니다: " + childId));
 
         // 부모-자식 관계 확인
-        familyRelationRepository.findByParentAndChildAndStatus(parent, child, Progress.YES)
-                .orElseThrow(() -> new IllegalStateException("부모와 자녀 관계가 존재하지 않습니다."));
+        List<FamilyRelation> relations = familyRelationRepository.findByParentAndChildAndStatus(parent, child, Progress.YES);
+        if (relations.isEmpty()) {
+            throw new SsookException(ErrorCode.NOT_PARENT_CHILD);
+        }
 
         Card card = child.getCard();
         Balance balance = balanceRepository.findByCard(card)
@@ -291,5 +300,59 @@ public class ParentService {
     public Parent getParentById(Integer parentId) {
         return parentRepository.findById(parentId)
                 .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_PARENT));
+    }
+
+    public List<ChildHistoryResDto> getChildPaymentList(int parentId, Integer childId, Integer months) {
+        Parent parent = parentRepository.findById(parentId)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_PARENT));
+        Child child = childRepository.findById(childId)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_CHILD));
+
+        // 부모-자식 관계 확인
+        List<FamilyRelation> relations = familyRelationRepository.findByParentAndChildAndStatus(parent, child, Progress.YES);
+        if (relations.isEmpty()) {
+            throw new SsookException(ErrorCode.ACCESS_DENIED);
+        }
+
+        List<ParentHistory> parentHistories;
+        if (months == null || months <= 0) {
+            months = 1;
+        }
+        LocalDateTime endDate = LocalDateTime.now();
+        LocalDateTime startDate = endDate.minusMonths(months).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+
+        List<ChildHistory> histories = childHistoryRepository.findByChildIdAndDateRange(childId, startDate, endDate);
+        log.info("결제 내역 조회 완료 - 자녀 ID: {}, 내역 수: {}", childId, histories.size());
+
+
+        return histories.stream()
+                .map(ChildHistoryResDto::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public ChildHistory getChildPaymentDetail(int parentId,int childId ,int historyId) {
+        log.info("결제 상세 내역 조회 시작 - 사용자 ID: {}, 내역 ID: {}", parentId, historyId);
+
+        Parent parent = parentRepository.findById(parentId)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_PARENT));
+        Child child = childRepository.findById(childId)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_CHILD));
+
+        // 부모-자식 관계 확인
+        List<FamilyRelation> relations = familyRelationRepository.findByParentAndChildAndStatus(parent, child, Progress.YES);
+        if (relations.isEmpty()) {
+            throw new SsookException(ErrorCode.NOT_PARENT_CHILD);
+        }
+
+        // 거래 내역 조회
+        ChildHistory childHistory = childHistoryRepository.findById(historyId)
+                .orElseThrow(() -> {
+                    log.error("거래 내역 조회 실패 - 내역 ID: {}", historyId);
+                    return new SsookException(ErrorCode.HISTORY_NOT_FOUND);
+                });
+
+        log.info("거래 내역 조회 성공 - 내역 ID: {}", historyId);
+
+        return childHistory;
     }
 }

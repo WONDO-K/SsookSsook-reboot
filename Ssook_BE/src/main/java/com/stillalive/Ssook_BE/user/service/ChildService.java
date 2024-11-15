@@ -144,9 +144,10 @@ public class ChildService {
                 .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_PARENT));
 
         // 부모-자식 관계 확인
-        familyRelationRepository.findByParentAndChildAndStatus(parent, child, Progress.YES)
-                .orElseThrow(() -> new SsookException(ErrorCode.NOT_MY_FAMILY_RELATION));
-
+        List<FamilyRelation> relations = familyRelationRepository.findByParentAndChildAndStatus(parent, child, Progress.YES);
+        if (relations.isEmpty()) {
+            throw new SsookException(ErrorCode.NOT_PARENT_CHILD);
+        }
 
         // 알림 전송
         alertService.sendAlert(
