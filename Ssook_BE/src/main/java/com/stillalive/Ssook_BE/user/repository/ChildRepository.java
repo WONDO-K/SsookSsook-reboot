@@ -20,4 +20,6 @@ public interface ChildRepository extends JpaRepository<Child, Integer> {
     Optional<Child> findByTel(String tel);
 
     boolean existsByChildId(int userId);
+
+    Optional<Child> findByChildId(Integer childId);
 }
