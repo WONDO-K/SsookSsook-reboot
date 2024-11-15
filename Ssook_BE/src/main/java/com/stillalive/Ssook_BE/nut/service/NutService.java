@@ -4,20 +4,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stillalive.Ssook_BE.diner.repository.DinerRepository;
-import com.stillalive.Ssook_BE.domain.BodyProfile;
-import com.stillalive.Ssook_BE.domain.Child;
-import com.stillalive.Ssook_BE.domain.Diner;
-import com.stillalive.Ssook_BE.domain.NutHistory;
+import com.stillalive.Ssook_BE.domain.*;
 import com.stillalive.Ssook_BE.domain.base.Nutrient;
 import com.stillalive.Ssook_BE.enums.Gender;
 import com.stillalive.Ssook_BE.enums.Meal;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
-import com.stillalive.Ssook_BE.nut.dto.DayIntakeNutResDto;
-import com.stillalive.Ssook_BE.nut.dto.IntakeNutResDto;
-import com.stillalive.Ssook_BE.nut.dto.WeekIntakeNutResDto;
+import com.stillalive.Ssook_BE.nut.dto.*;
 import com.stillalive.Ssook_BE.nut.repository.NutHistoryRepository;
-import com.stillalive.Ssook_BE.pay.dto.PaymentReqDto;
+import com.stillalive.Ssook_BE.nut.repository.NutrientRequirementRepository;
 import com.stillalive.Ssook_BE.pay.dto.PaymentRequest;
 import com.stillalive.Ssook_BE.user.repository.ChildRepository;
 import com.stillalive.Ssook_BE.user.repository.BodyProfileRepository;
@@ -30,11 +25,10 @@ import org.springframework.http.*;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.temporal.WeekFields;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,6 +44,7 @@ public class NutService {
     @Value("${chatgpt.key}")  // application.yml에서 API 키 불러오기
     private String apiKey;  // 발급받은 API 키
     private final String gptApiUrl = "https://api.openai.com/v1/chat/completions";
+    private final NutrientRequirementRepository nutrientRequirementRepository;
 
 
     // 영양소 섭취, 기록 하기
@@ -194,9 +189,10 @@ public class NutService {
     }
 
     // GPT를 이용하여 영양 정보 생성
+    @Transactional(readOnly = true)
     public void genrateNutFromGPT(PaymentRequest paymentReqDto, Child child) {
         // GPT를 이용하여 영양 정보 생성
-        Integer diner_id=paymentReqDto.getDinerId();
+        Integer diner_id = paymentReqDto.getDinerId();
         Diner diner = dinerRepository.findById(diner_id)
                 .orElseThrow(() -> new SsookException(ErrorCode.DINER_NOT_FOUND));
         String menuNames = paymentReqDto.getPayDetails().stream()
@@ -205,14 +201,14 @@ public class NutService {
         BodyProfile bodyProfile = bodyProfileRepository.findByChild(child)
                 .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_BODYPROFILE));
 
-        Integer age=LocalDate.now().getYear()-child.getBday().getYear();
-        Gender gender=child.getGender();
-        Float height=bodyProfile.getHeight();
-        Float weight=bodyProfile.getWeight();
-        Integer eer=bodyProfile.getCaloryEer();
+        Integer age = LocalDate.now().getYear() - child.getBday().getYear();
+        Gender gender = child.getGender();
+        Float height = bodyProfile.getHeight();
+        Float weight = bodyProfile.getWeight();
+        Integer eer = bodyProfile.getCaloryEer();
 
-        String prompt = "음식점 카테고리:"+"\n" + " 음식점 이름: " + "\n" + "먹은 메뉴들: " + "\n" + "아이의 나이,성별,키,몸무게,EER:" + "\n" + "위와 같은 형태의 정보를 제공하겠다, 해당 아이가 먹을 양을 고려해서, 먹은 메뉴들을 종합접으로 1끼 기준의 영양소를 알려줘" + "\n" + "추가로 해당 음식점에서 제공 할 것 같은 반찬이나 공기밥이 필요한 음식에 대해서 공기밥을 추가해 그에 맞는 영양소도 적절히 생각해서 영양소에 추가해줘" + "\n" + "음식 섭취량은 아이의 신체정보를 통해 예측해" + "\n" + "답변은 아래와 같은 json 형태(단위는 없이)로 주고 다른 답변은 일절 생성하지마 - 답변에서 단위는 생략하돼 칼로리->kcal, vitA->microgram, 탄단지->g, 나머지->mg으로 생각해줘" + "\n" + "{cal: 100, carb: 100, protein: 100, fat: 100, vitA: 100, vitC: 100, ribof: 100, thiam: 100, iron: 100, calcium: 100}";
-        String inputText = "음식점 카테고리: " + diner.getCategory() + "\n" + " 음식점 이름: " + diner.getName() + "\n" + "먹은 메뉴들: "+menuNames + "\n" + "아이의 나이,성별(남1,여2),키,몸무게,EER: " + age + "세, " + gender +" , " + height + "cm, " + weight + "kg, " + eer + "kcal";
+        String prompt = "음식점 카테고리:" + "\n" + " 음식점 이름: " + "\n" + "먹은 메뉴들: " + "\n" + "아이의 나이,성별,키,몸무게,EER:" + "\n" + "위와 같은 형태의 정보를 제공하겠다, 해당 아이가 먹을 양을 고려해서, 먹은 메뉴들을 종합접으로 1끼 기준의 영양소를 알려줘" + "\n" + "추가로 해당 음식점에서 제공 할 것 같은 반찬이나 공기밥이 필요한 음식에 대해서 공기밥을 추가해 그에 맞는 영양소도 적절히 생각해서 영양소에 추가해줘" + "\n" + "음식 섭취량은 아이의 신체정보를 통해 예측해" + "\n" + "답변은 아래와 같은 json 형태(단위는 없이)로 주고 다른 답변은 일절 생성하지마 - 답변에서 단위는 생략하돼 칼로리->kcal, vitA->microgram, 탄단지->g, 나머지->mg으로 생각해줘" + "\n" + "{cal: 100, carb: 100, protein: 100, fat: 100, vitA: 100, vitC: 100, ribof: 100, thiam: 100, iron: 100, calcium: 100}";
+        String inputText = "음식점 카테고리: " + diner.getCategory() + "\n" + " 음식점 이름: " + diner.getName() + "\n" + "먹은 메뉴들: " + menuNames + "\n" + "아이의 나이,성별(남1,여2),키,몸무게,EER: " + age + "세, " + gender + " , " + height + "cm, " + weight + "kg, " + eer + "kcal";
 
         log.info("ChatGPT API 요청: {}", inputText);
 
@@ -252,7 +248,8 @@ public class NutService {
 
 
                 // 영양소 섭취 기록
-                Map<String, Float> nutrientMap = mapper.readValue(generatedText, new TypeReference<Map<String, Float>>() {});
+                Map<String, Float> nutrientMap = mapper.readValue(generatedText, new TypeReference<Map<String, Float>>() {
+                });
 
                 log.info("영양소 정보: {}", nutrientMap);
 
@@ -284,4 +281,100 @@ public class NutService {
 
     }
 
+    @Transactional(readOnly = true)
+    public List<NutScoreResDto> getScoreList(Integer child_id, Integer year, Integer month) {
+        // 본인의 자녀인지 확인
+        Child child = childRepository.findById(child_id)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_CHILD));
+
+        // 아이의 신체정보 조회
+        BodyProfile bodyProfile = bodyProfileRepository.findByChild(child)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_BODYPROFILE));
+
+        Integer childEer = bodyProfile.getCaloryEer();
+
+        LocalDate today = LocalDate.now();
+        Integer age = today.getYear() - child.getBday().getYear();
+        Optional<NutrientRequirement> nutrientRequirement = nutrientRequirementRepository.findByGenderAndAge(child.getGender(), age);
+
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+
+        // eat_date가 year-month인 모든 nut_history들고오기
+        List<NutHistory> nutHistories = nutHistoryRepository.findAllByChild_ChildIdAndEatDateBetween(child_id, startDate, endDate)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_NUT_HISTORY));
+
+        // 하루 누적 섭취량 계산
+        Map<Date, DayIntakeNutResDto> dailyNutMap = new HashMap<>();
+        for(NutHistory nutHistory : nutHistories) {
+
+            //
+            Date eatDate = nutHistory.getEatDate();
+            Float cal = nutHistory.getNutrient().getCal();
+            Float carb = nutHistory.getNutrient().getCarb();
+            Float protein = nutHistory.getNutrient().getProtein();
+            Float fat = nutHistory.getNutrient().getFat();
+            Float vitA = nutHistory.getNutrient().getVitA();
+            Float vitC = nutHistory.getNutrient().getVitC();
+            Float ribof = nutHistory.getNutrient().getRibof();
+            Float thiam = nutHistory.getNutrient().getThiam();
+            Float iron = nutHistory.getNutrient().getIron();
+            Float calcium = nutHistory.getNutrient().getCalcium();
+
+            if (dailyNutMap.containsKey(eatDate)) {
+                DayIntakeNutResDto dailyNut = dailyNutMap.get(eatDate);
+                DayIntakeNutResDto newDailyNut = dailyNut.addNutrient(cal, carb, protein, fat, vitA, vitC, ribof, thiam, iron, calcium);
+                dailyNutMap.put(eatDate, newDailyNut);
+            } else {
+
+                // eatDate는 Date 타입이므로 LocalDate로 변환
+                String eatDateStr = eatDate.toString();
+                LocalDate eatDateLocal = LocalDate.parse(eatDateStr);
+                dailyNutMap.put(eatDate, DayIntakeNutResDto.builder()
+                        .childId(child_id)
+                        .eatDate(eatDateLocal)
+                        .cal(cal)
+                        .carb(carb)
+                        .protein(protein)
+                        .fat(fat)
+                        .vitA(vitA)
+                        .vitC(vitC)
+                        .ribof(ribof)
+                        .thiam(thiam)
+                        .iron(iron)
+                        .calcium(calcium)
+                        .build());
+            }
+
+
+        }
+
+        // 하루 누적 섭취량을 바탕으로 점수 계산
+        List<NutScoreResDto> nutScoreList = new ArrayList<>();
+        for (Map.Entry<Date, DayIntakeNutResDto> entry : dailyNutMap.entrySet()) {
+            DayIntakeNutResDto dailyNut = entry.getValue();
+
+            Float score= (dailyNut.getCal()/childEer +
+                                dailyNut.getCarb()/nutrientRequirement.get().getCarb() +
+                                dailyNut.getProtein()/nutrientRequirement.get().getProtein() +
+                                dailyNut.getVitA()/nutrientRequirement.get().getVitA() +
+                                dailyNut.getVitC()/nutrientRequirement.get().getVitC() +
+                                dailyNut.getRibof()/nutrientRequirement.get().getRibof() +
+                                dailyNut.getThiam()/nutrientRequirement.get().getThiam() +
+                                dailyNut.getIron()/nutrientRequirement.get().getIron() +
+                                dailyNut.getCalcium()/nutrientRequirement.get().getCalcium())/9;
+
+            // date는 dailyNut의 eatDate를 LocalDate로 변환한 값
+            NutScoreResDto nutScoreResDto = NutScoreResDto.builder()
+                    .date(entry.getValue().getEatDate())
+                    .score((int) (10*score))
+                    .build();
+
+            // nutScoreList에 추가
+            nutScoreList.add(nutScoreResDto);
+        }
+
+        return nutScoreList;
+    }
 }
