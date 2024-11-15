@@ -287,4 +287,9 @@ public class ParentService {
                 .map(ParentHistoryResDto::toDto)
                 .collect(Collectors.toList());
     }
+
+    public Parent getParentById(Integer parentId) {
+        return parentRepository.findById(parentId)
+                .orElseThrow(() -> new SsookException(ErrorCode.NOT_FOUND_PARENT));
+    }
 }

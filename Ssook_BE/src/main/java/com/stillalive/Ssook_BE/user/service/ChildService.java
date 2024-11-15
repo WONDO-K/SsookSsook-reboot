@@ -213,4 +213,10 @@ public class ChildService {
 
         log.info("아이 신체 정보 수정 완료 - 아이 ID: {}", childId);
     }
+
+    public Child getChildById(Integer childId) {
+        return childRepository.findByChildId(childId).orElseThrow(() -> {
+            throw new SsookException(ErrorCode.NOT_FOUND_CHILD);
+        });
+    }
 }

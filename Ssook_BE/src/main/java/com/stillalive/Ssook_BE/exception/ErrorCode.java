@@ -61,6 +61,7 @@ public enum ErrorCode {
 
     // Parent
     NOT_FOUND_PARENT(HttpStatus.NOT_FOUND, "해당 부모를 찾을 수 없습니다."),
+    NOT_PARENT_CHILD(HttpStatus.BAD_REQUEST, "본인의 자녀가 아닙니다."),
 
     // FamilyRelation
     NOT_FOUND_FAMILY_RELATION(HttpStatus.NOT_FOUND, "해당 가족 관계를 찾을 수 없습니다."),
