@@ -154,7 +154,8 @@ public class PayController {
         if (isChild) {
             userId = userDetails.getChildId();
         } else {
-            userId = userDetails.getParentId();
+            log.info("접근자 타입 확인 - 부모 유저, 부모 유저는 부모용 자녀 거래내역 조회 API를 사용해야 합니다.");
+            throw new SsookException(ErrorCode.ACCESS_DENIED);
         }
 
         // 거래 내역 상세 조회를 위한 서비스 호출

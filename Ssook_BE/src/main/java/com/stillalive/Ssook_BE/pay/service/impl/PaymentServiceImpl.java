@@ -400,14 +400,6 @@ public class PaymentServiceImpl implements PaymentService {
             log.info("본인 거래 내역 조회 허용 - 사용자 ID: {}", userId);
             return childHistory;
         }
-
-        // 부모가 자식의 거래 내역에 접근하려는 경우, 부모-자식 관계 확인
-        boolean isRelated = familyRelationRepository.findByParent_ParentIdAndChild_ChildId(userId, historyChildId).isPresent();
-        if (isRelated) {
-            log.info("부모-자식 관계 확인 - 부모 ID: {}, 자녀 ID: {}", userId, historyChildId);
-            return childHistory;
-        }
-
         // 관계가 없으면 접근 불가 예외 발생
         log.error("접근 불가 - 사용자 ID: {}, 내역 ID: {}", userId, historyId);
         throw new SsookException(ErrorCode.ACCESS_DENIED);

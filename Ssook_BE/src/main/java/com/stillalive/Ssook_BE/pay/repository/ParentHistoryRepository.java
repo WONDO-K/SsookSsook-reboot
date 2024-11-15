@@ -1,5 +1,6 @@
 package com.stillalive.Ssook_BE.pay.repository;
 
+import com.stillalive.Ssook_BE.domain.Child;
 import com.stillalive.Ssook_BE.domain.ChildHistory;
 import com.stillalive.Ssook_BE.domain.Parent;
 import com.stillalive.Ssook_BE.domain.ParentHistory;
@@ -13,4 +14,6 @@ public interface ParentHistoryRepository extends JpaRepository<ParentHistory, In
     List<ParentHistory> findAllByParent(Parent parent);
 
     List<ParentHistory> findAllByParentAndCreatedAtAfter(Parent parent, LocalDateTime localDateTime);
+
+
 }
