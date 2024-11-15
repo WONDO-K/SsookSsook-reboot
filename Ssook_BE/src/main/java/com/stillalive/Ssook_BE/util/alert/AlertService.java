@@ -10,7 +10,9 @@ public interface AlertService {
 
     void sendAlert(int userId, AlertDto alertDto); // 특정 사용자에게 알림 전송
 
-    List<AlertDto> getAlertHistory(int userId); // 사용자의 알림 히스토리 조회
+    List<AlertDto> getFalseAlertHistory(int userId); // 사용자의 알림 히스토리 조회
+
+    List<AlertDto> getTrueAlertHistory(int userId); // 사용자의 읽은 알림 히스토리 조회
 
     long countUnreadAlerts(int userId); // 읽지 않은 알림 수 조회
 

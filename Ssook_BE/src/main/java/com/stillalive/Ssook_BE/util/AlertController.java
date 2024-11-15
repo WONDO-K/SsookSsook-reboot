@@ -34,11 +34,19 @@ public class AlertController {
         return alertService.getAlertsForUser(userId, isParent);
     }
 
-    @GetMapping("/list")
-    @Operation(summary = "알림 히스토리 조회", description = "사용자의 알림 히스토리를 조회하는 API")
+    @GetMapping("/list/unread")
+    @Operation(summary = "안읽은 알림 히스토리 조회", description = "사용자의 안읽은 알림 히스토리를 조회하는 API")
     public ResponseEntity<ApiResponse<?>> getAlertHistory(@AuthenticationPrincipal CustomUserDetails userDetails) {
         int userId = userDetails.isParent() ? userDetails.getParentId() : userDetails.getChildId();
-        List<AlertDto> alertHistory = alertService.getAlertHistory(userId);
+        List<AlertDto> alertHistory = alertService.getFalseAlertHistory(userId);
+        return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "알림 히스토리 조회 성공", alertHistory));
+    }
+
+    @GetMapping("/list/read")
+    @Operation(summary = "읽은 알림 히스토리 조회", description = "사용자의 읽은 알림 히스토리를 조회하는 API")
+    public ResponseEntity<ApiResponse<?>> getReadAlertHistory(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        int userId = userDetails.isParent() ? userDetails.getParentId() : userDetails.getChildId();
+        List<AlertDto> alertHistory = alertService.getTrueAlertHistory(userId);
         return ResponseEntity.ok(ApiResponse.of(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), "알림 히스토리 조회 성공", alertHistory));
     }
 
