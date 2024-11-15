@@ -91,12 +91,35 @@ public class AlertServiceImpl implements AlertService {
     }
 
     @Override
-    public List<AlertDto> getAlertHistory(int userId) {
+    public List<AlertDto> getFalseAlertHistory(int userId) {
         List<Alert> alerts;
         if (isParent(userId)) {
-            alerts = alertRepository.findAllByReceiverIdOrderByTimestampDesc(userId);
+            alerts = alertRepository.findAllByReceiverIdAndIsReadFalseOrderByTimestampDesc(userId);
         } else if (isChild(userId)) {
-            alerts = alertRepository.findAllBySenderIdOrderByTimestampDesc(userId);
+            alerts = alertRepository.findAllBySenderIdAndIsReadFalseOrderByTimestampDesc(userId);
+        } else {
+            throw new IllegalArgumentException("존재하지 않는 사용자 ID입니다: " + userId);
+        }
+
+        return alerts.stream()
+                .map(alert -> AlertDto.builder()
+                        .id(alert.getId())
+                        .receiverId(alert.getReceiverId())
+                        .title(alert.getTitle())
+                        .message(alert.getMessage())
+                        .timestamp(alert.getTimestamp())
+                        .isRead(alert.isRead())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AlertDto> getTrueAlertHistory(int userId) {
+        List<Alert> alerts;
+        if (isParent(userId)) {
+            alerts = alertRepository.findAllByReceiverIdAndIsReadTrueOrderByTimestampDesc(userId);
+        } else if (isChild(userId)) {
+            alerts = alertRepository.findAllBySenderIdAndIsReadTrueOrderByTimestampDesc(userId);
         } else {
             throw new IllegalArgumentException("존재하지 않는 사용자 ID입니다: " + userId);
         }
