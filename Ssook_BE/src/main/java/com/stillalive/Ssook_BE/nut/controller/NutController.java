@@ -6,9 +6,7 @@ import com.stillalive.Ssook_BE.enums.Meal;
 import com.stillalive.Ssook_BE.enums.Progress;
 import com.stillalive.Ssook_BE.exception.ErrorCode;
 import com.stillalive.Ssook_BE.exception.SsookException;
-import com.stillalive.Ssook_BE.nut.dto.DayIntakeNutResDto;
-import com.stillalive.Ssook_BE.nut.dto.IntakeNutResDto;
-import com.stillalive.Ssook_BE.nut.dto.WeekIntakeNutResDto;
+import com.stillalive.Ssook_BE.nut.dto.*;
 import com.stillalive.Ssook_BE.nut.service.NutService;
 import com.stillalive.Ssook_BE.user.CustomUserDetails;
 import com.stillalive.Ssook_BE.user.repository.FamilyRelationRepository;
@@ -22,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 
 @RestController
 @Tag(name = "Nut Controller", description = "영양소 API")
@@ -176,6 +175,26 @@ public class NutController {
                         weekIntakeNutResDto
                 )
         );
+    }
+
+//    경로 변수:cild_id, 쿼리변수 : year, month 를 받아서 아이의 하루 영양 섭취량과 권장 섭취량을 조회한후 비교해서 결과를 반환하는 메소드
+    @Operation(summary = "자녀 월간 하루 영양 섭취량 리스트 조회", description = "자녀 월간 하루 영양 섭취량 리스트 조회")
+    @GetMapping("/score/{child_id}")
+    public ResponseEntity<ApiResponse<NutScoreListResDto>> getMonthIntakeNut(@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable Integer child_id, @RequestParam(value = "year", required = false) Integer year, @RequestParam(value = "month", required = false) Integer month) {
+
+        List<NutScoreResDto> result = nutService.getScoreList(child_id, year, month);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(
+                        200,
+                        "OK",
+                        "자녀 월간 하루 영양 섭취량 리스트 조회가 완료되었습니다.",
+                        NutScoreListResDto.builder()
+                                .score_list(result)
+                                .build()
+                )
+        );
+
     }
 
 
