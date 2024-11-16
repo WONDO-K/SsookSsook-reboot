@@ -10,4 +10,12 @@ import java.util.List;
 public class ParentListResDto {
     private List<ParentResDto> parentList;
     private int totalItems;
+
+    @Override
+    public String toString() {
+        return "ParentListResDto{" +
+                "parentList=" + parentList +
+                ", totalItems=" + totalItems +
+                '}';
+    }
 }
