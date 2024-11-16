@@ -29,5 +29,11 @@ public class Parent extends User {
         isParent = true;
     }
 
+    @Override
+    public String toString() {
+        return "Parent{" +
+                "parentId=" + parentId +
+                '}';
+    }
 
 }

@@ -72,12 +72,16 @@ public class SchoolController {
                                                                           @RequestParam(value = "date", required = false) String dateStr) {
         // 자녀 식별
         Child child = childService.getChildById(childId);
+        log.info("child: " + child);
 
         // 부모 식별
         Parent parent = parentService.getParentById(customUserDetails.getParentId());
+        log.info("parent: " + parent);
 
         // 부모의 자녀인지 확인
-        ParentListResDto parentListResDto = childService.getParentList(parent.getParentId());
+        ParentListResDto parentListResDto = childService.getParentList(child.getChildId());
+        log.info("parentListResDto: " + parentListResDto);
+
         if (parentListResDto.getParentList().stream().noneMatch(p -> p.getParentId().equals(parent.getParentId()))) {
             throw new SsookException(ErrorCode.NOT_PARENT_CHILD);
         }
@@ -132,7 +136,7 @@ public class SchoolController {
         Parent parent = parentService.getParentById(customUserDetails.getParentId());
 
         // 부모의 자녀인지 확인
-        ParentListResDto parentListResDto = childService.getParentList(parent.getParentId());
+        ParentListResDto parentListResDto = childService.getParentList(child.getChildId());
         if (parentListResDto.getParentList().stream().noneMatch(p -> p.getParentId().equals(parent.getParentId()))) {
             throw new SsookException(ErrorCode.NOT_PARENT_CHILD);
         }

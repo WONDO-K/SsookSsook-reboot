@@ -15,4 +15,15 @@ public class ParentResDto {
     private String tel;
     private LocalDate bday;
     private Gender gender;
+
+    @Override
+    public String toString() {
+        return "ParentResDto{" +
+                "parentId=" + parentId +
+                ", name='" + name + '\'' +
+                ", tel='" + tel + '\'' +
+                ", bday=" + bday + '\'' +
+                ", gender=" + gender +
+                '}';
+    }
 }
