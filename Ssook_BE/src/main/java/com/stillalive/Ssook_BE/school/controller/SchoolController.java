@@ -136,7 +136,7 @@ public class SchoolController {
         Parent parent = parentService.getParentById(customUserDetails.getParentId());
 
         // 부모의 자녀인지 확인
-        ParentListResDto parentListResDto = childService.getParentList(parent.getParentId());
+        ParentListResDto parentListResDto = childService.getParentList(child.getChildId());
         if (parentListResDto.getParentList().stream().noneMatch(p -> p.getParentId().equals(parent.getParentId()))) {
             throw new SsookException(ErrorCode.NOT_PARENT_CHILD);
         }
