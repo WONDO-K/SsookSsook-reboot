@@ -241,11 +241,17 @@ public class NutService {
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode root = mapper.readTree(response.getBody());
                 String generatedText = root.path("choices").get(0).path("message").path("content").asText();
-//              이부분에서 응답을 받아서 처리하면 됩니다.
+
+                // 응답 처리
                 log.info("ChatGPT API 요청 결과: {}", generatedText);
 
+                // 필요 없는 부분 제거
                 generatedText = generatedText.replaceAll("```json", "").replaceAll("```", "").trim();
 
+                // 필드 이름에 큰따옴표가 없는 경우 큰따옴표 추가
+                if (!generatedText.contains("\"")) {
+                    generatedText = generatedText.replaceAll("(?<=\\{|\\s|,)(\\w+):", "\"$1\":");
+                }
 
                 // 영양소 섭취 기록
                 Map<String, Float> nutrientMap = mapper.readValue(generatedText, new TypeReference<Map<String, Float>>() {
@@ -254,9 +260,9 @@ public class NutService {
                 log.info("영양소 정보: {}", nutrientMap);
 
                 recordNut(child.getChildId(),
-                        new Date()
-                        , Meal.NONE
-                        , Nutrient.builder()
+                        new Date(),
+                        Meal.NONE,
+                        Nutrient.builder()
                                 .cal(nutrientMap.get("cal"))
                                 .carb(nutrientMap.get("carb"))
                                 .protein(nutrientMap.get("protein"))
@@ -273,7 +279,6 @@ public class NutService {
             } else {
                 log.info("ChatGPT API 요청 중 오류 발생: {}", response.getStatusCode());
                 throw new SsookException(ErrorCode.FAILED_TO_GENERATE_NUT);
-
             }
         } catch (Exception e) {
             // 예외 발생 시 오류 메시지 던짐
