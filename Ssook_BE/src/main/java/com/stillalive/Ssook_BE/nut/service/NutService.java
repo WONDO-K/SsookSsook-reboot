@@ -272,11 +272,13 @@ public class NutService {
 
             } else {
                 log.info("ChatGPT API 요청 중 오류 발생: {}", response.getStatusCode());
+                throw new SsookException(ErrorCode.FAILED_TO_GENERATE_NUT);
 
             }
         } catch (Exception e) {
             // 예외 발생 시 오류 메시지 던짐
             log.info("ChatGPT API 요청 중 오류 발생: {}", e.getMessage());
+            throw new SsookException(ErrorCode.FAILED_TO_GENERATE_NUT);
         }
 
     }

@@ -143,6 +143,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 
     @Override
+    @Transactional
     public void nfcProcessPayment(NfcPaymentReqDto dto, Child child) {
         // 1. 카드 정보 조회
         Card card = cardRepository.findByChild(child)
