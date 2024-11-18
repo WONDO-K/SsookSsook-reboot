@@ -1,5 +1,6 @@
 ## 🥗우리아이 영양소 지킴이 쑥쑥(SSOOKSSOOK)🥗
-![대표사진](exec/resources/ssookssook.jpg)
+<img src="exec/resources/ssookssook.jpg" alt="대표사진" width="250">
+
 ## *"키도 쑥쑥, 자신감도 쑥쑥"*
 
 
