@@ -77,7 +77,7 @@
 
 | **[최동호]()** | **[김동건]()** | **[윤동환]()** | **[정범수]()** | **[차봉석]()** |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-| ![최동호](exec/resources/최동호.png) | ![김동건](exec/resources/차봉석.png) | ![윤동환](exec/resources/윤동환.png) | ![정범수](exec/resources/정범수.png) | ![차봉석](exec/resources/차봉석.png) | 
+| ![최동호](exec/resources/김동건.png) | ![김동건](exec/resources/김동건.png) | ![윤동환](exec/resources/김동건.png) | ![정범수](exec/resources/김동건.png) | ![차봉석](exec/resources/김동건.png) | 
 | Backend | Backend | Frontend | Frontend | Frontend | Backend |
 
 
