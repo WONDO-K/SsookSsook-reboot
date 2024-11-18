@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>포인트 충전</title>
+
+    <!-- 포트원 결제 라이브러리 -->
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+    <script type="text/javascript" src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+</head>
+
+<body>
+<h1>포인트 충전 페이지</h1>
+<p>사용자 로그인 ID: {{loginId}}</p>
+<p>사용자 ID: {{userId}}</p>
+
+<!-- Hidden fields to pass loginId and userId to JavaScript -->
+<input type="hidden" id="hiddenLoginId" value="{{loginId}}">
+<input type="hidden" id="hiddenUserId" value="{{userId}}">
+
+<!-- 금액 입력 필드 추가 -->
+<label for="amount">충전 금액:</label>
+<input type="number" id="amount" placeholder="충전할 금액 입력" required>
+
+<button id="payment">포인트 충전하기</button> <!-- 결제 버튼 -->
+
+
+<!-- 결제 스크립트 불러오기 -->
+<script src="/js/payment.js"></script>
+</body>
+</html>

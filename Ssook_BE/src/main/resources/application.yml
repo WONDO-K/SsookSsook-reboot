@@ -1,0 +1,80 @@
+server:
+    port: ${SERVER_PORT}
+
+    servlet:
+        encoding:
+            force-response: true
+
+    tomcat:
+        connection-timeout: 60s
+
+spring:
+    application:
+        name: Ssook_BE
+
+    config:
+        import: optional:file:.env[.properties]
+
+    web:
+        encoding:
+            charset: UTF-8
+            enabled: true
+            force: true
+#    h2:
+#        console:
+#            enabled: true  # H2 Console을 사용할지 여부 (H2 Console은 H2 Database를 UI로 제공해주는 기능)
+#            path: /h2-console  # H2 Console의 Path
+
+    datasource:
+        url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?useUnicode=true&characterEncoding=utf8&characterSetResults=utf8&serverTimezone=Asia/Seoul
+        username: ${MYSQL_ROOT_USER}  # ?? ??? ??
+        password: ${MYSQL_ROOT_PASSWORD}  # ?? ??? ??
+        driver-class-name: com.mysql.cj.jdbc.Driver
+
+    jpa:
+        properties:
+            hibernate:
+                show_sql: false
+                format_sql: false
+        hibernate:
+            ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
+            database-platform: org.hibernate.dialect.MySQLDialect
+            temp:
+                use_jdbc_metadata_defaults: false
+    devtools:
+        restart:
+            enabled: false
+
+    jwt:
+        secret: ${JWT_SECRET}
+
+
+    quartz:
+        job-store-type: jdbc
+        jdbc:
+            initialize-schema: always
+        properties:
+            org:
+                quartz:
+                    scheduler:
+                        instanceName: BalanceScheduler
+                    jobStore:
+                        class: org.quartz.impl.jdbcjobstore.JobStoreTX
+                        driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+                        tablePrefix: QRTZ_
+
+                    threadPool:
+                        threadCount: 5
+
+# Swagger Configuration
+springdoc:
+    api-docs:
+        enabled: true
+    swagger-ui:
+        enabled: true
+        path: /swagger-ui.html
+
+# 챗지피티 설정
+chatgpt:
+    key: ${CHATGPT_API_KEY}  # 환경 변수로 대체
+    key2: ${CHATGPT_API_KEY2}  # 환경 변수로 대체
