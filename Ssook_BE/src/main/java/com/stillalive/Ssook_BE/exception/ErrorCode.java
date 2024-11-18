@@ -79,7 +79,10 @@ public enum ErrorCode {
     NOT_FOUND_NUT_HISTORY(HttpStatus.NOT_FOUND, "해당 영양 섭취 기록을 찾을 수 없습니다."),
 
     // Report
-    NOT_FOUND_REPORT(HttpStatus.NOT_FOUND, "해당 리포트를 찾을 수 없습니다.");
+    NOT_FOUND_REPORT(HttpStatus.NOT_FOUND, "해당 리포트를 찾을 수 없습니다."),
+
+    // Chat GPT
+    FAILED_TO_GENERATE_NUT(HttpStatus.INTERNAL_SERVER_ERROR, "영양소 챗봇을 생성하는데 실패했습니다."),
 
     ;
     private final HttpStatus httpstatus;
