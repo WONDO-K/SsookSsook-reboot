@@ -59,19 +59,16 @@
 
 ## 3. 주요 기능
 ### NFC 결제 시스템
-<img src="exec/resources/NFC.jpg" alt="NFC" width="250">
+<img src="exec/resources/pay.gif" alt="pay" width="250">
 
 ### 포인트 충전
-<img src="exec/resources/charge.jpg" alt="charge" width="250">
-
-### 포인트 분할 결제
-<img src="exec/resources/pay.jpg" alt="pay" width="250">
+<img src="exec/resources/charge.gif" alt="charge" width="250">
 
 ### 주간 영양 리포트
-<img src="exec/resources/report.jpg" alt="report" width="250">
+<img src="exec/resources/report.gif" alt="report" width="250">
 
 ### 가게 지도 및 메뉴 확인
-<img src="exec/resources/map.jpg" alt="map" width="250">
+<img src="exec/resources/map.gif" alt="map" width="250">
 
 ## 4. 기능 및 기술 소개
 
@@ -145,10 +142,10 @@
 
 
 **Backend**
-- 최동호 : 팀장 / 
+- 최동호 : 팀장 / 결제 시스템 / 카카오페이 / 실시간 알람 / PPT 제작 / 발표 
 - 김동건 : 데이터 수집(부산 전지역 가게/메뉴/급식, 영양소 관련 공문서 및 논문) 및 전처리 / 인프라 구축 / 영양소 저장 및 메뉴추천, 주간 리포트 생성 서비스 구현
 - 차봉석 : 회원 / 식당 / 급식 / 영양 관련 도메인
 
 **Frontend**
-- 정범수 : 
+- 정범수 : 결제 시스템 / IoT / 프론트엔드 
 - 윤동환 : 
