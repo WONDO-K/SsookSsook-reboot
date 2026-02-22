@@ -15,5 +15,6 @@ public interface ParentHistoryRepository extends JpaRepository<ParentHistory, In
 
     List<ParentHistory> findAllByParentAndCreatedAtAfter(Parent parent, LocalDateTime localDateTime);
 
-
+    // 특정 결제 번호(impUid)가 이미 DB에 존재하는지 확인
+    boolean existsByImpUid(String impUid);
 }

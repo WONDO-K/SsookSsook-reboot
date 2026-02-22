@@ -38,12 +38,10 @@ public class PaymentServiceImpl implements PaymentService {
     private final ParentRepository parentRepository;
     private final FamilyRelationRepository familyRelationRepository;
     private final MenuRepository menuRepository;
-//    private final MenuNutService menuNutService;
+    // private final MenuNutService menuNutService;
     private final JWTUtil jwtUtil;
     private final NutService nutService;
     private final PayDetailRepository payDetailRepository;
-
-
 
     // 로그
     private static final Logger log = LoggerFactory.getLogger(PaymentServiceImpl.class);
@@ -97,7 +95,8 @@ public class PaymentServiceImpl implements PaymentService {
         int remainingDailyLimit = dailyTransactionLimit - dailySpent; // 오늘 남은 일일 결제 한도
 
         int currentBalance = balance.getCurrentBalance(); // 현재 카드 잔액
-        int cardMaxAvailableAmount = Math.min(currentBalance, singleTransactionLimit); // 카드로 결제 가능한 최대 금액 (잔액과 1회 결제 한도 중 작은 값)
+        int cardMaxAvailableAmount = Math.min(currentBalance, singleTransactionLimit); // 카드로 결제 가능한 최대 금액 (잔액과 1회 결제 한도
+                                                                                       // 중 작은 값)
         int cardPaymentAmount = 0;
         int pointRequiredAmount = paymentAmount;
 
@@ -140,7 +139,6 @@ public class PaymentServiceImpl implements PaymentService {
         childHistoryRepository.save(childHistory);
         log.info("결제 내역 저장 완료 - 카드 사용 금액: {}, 포인트 사용 금액: {}", cardPaymentAmount, pointRequiredAmount);
     }
-
 
     @Override
     @Transactional
@@ -191,7 +189,8 @@ public class PaymentServiceImpl implements PaymentService {
         int remainingDailyLimit = dailyTransactionLimit - dailySpent; // 오늘 남은 일일 결제 한도
 
         int currentBalance = balance.getCurrentBalance(); // 현재 카드 잔액
-        int cardMaxAvailableAmount = Math.min(currentBalance, singleTransactionLimit); // 카드로 결제 가능한 최대 금액 (잔액과 1회 결제 한도 중 작은 값)
+        int cardMaxAvailableAmount = Math.min(currentBalance, singleTransactionLimit); // 카드로 결제 가능한 최대 금액 (잔액과 1회 결제 한도
+                                                                                       // 중 작은 값)
         int cardPaymentAmount = 0;
         int pointRequiredAmount = paymentAmount;
 
@@ -348,23 +347,22 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-//    @Override
-//    @Transactional
-//    public void chargePoints(int parentId, int amount) {
-//        log.info("포인트 충전 시작 - 부모 ID: {}, 충전 금액: {}", parentId, amount);
-//
-//        Parent parent = parentRepository.findById(parentId)
-//                .orElseThrow(() -> {
-//                    log.error("부모 정보 조회 실패 - 부모 ID: {}", parentId);
-//                    return new SsookException(ErrorCode.USER_NOT_FOUND);
-//                });
-//
-//        int newPointBalance = parent.getPoint() + amount;
-//        parent.setPoint(newPointBalance);
-//        parentRepository.save(parent);
-//        log.info("포인트 충전 성공 - 부모 ID: {}, 충전 후 잔액: {}", parentId, newPointBalance);
-//    }
-
+    // @Override
+    // @Transactional
+    // public void chargePoints(int parentId, int amount) {
+    // log.info("포인트 충전 시작 - 부모 ID: {}, 충전 금액: {}", parentId, amount);
+    //
+    // Parent parent = parentRepository.findById(parentId)
+    // .orElseThrow(() -> {
+    // log.error("부모 정보 조회 실패 - 부모 ID: {}", parentId);
+    // return new SsookException(ErrorCode.USER_NOT_FOUND);
+    // });
+    //
+    // int newPointBalance = parent.getPoint() + amount;
+    // parent.setPoint(newPointBalance);
+    // parentRepository.save(parent);
+    // log.info("포인트 충전 성공 - 부모 ID: {}, 충전 후 잔액: {}", parentId, newPointBalance);
+    // }
 
     @Override
     public List<ChildHistoryResDto> getPaymentList(int childId, Integer months) {
@@ -374,7 +372,8 @@ public class PaymentServiceImpl implements PaymentService {
             months = 1;
         }
         LocalDateTime endDate = LocalDateTime.now();
-        LocalDateTime startDate = endDate.minusMonths(months).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime startDate = endDate.minusMonths(months).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0)
+                .withNano(0);
 
         List<ChildHistory> histories = childHistoryRepository.findByChildIdAndDateRange(childId, startDate, endDate);
         log.info("결제 내역 조회 완료 - 자녀 ID: {}, 내역 수: {}", childId, histories.size());
@@ -422,9 +421,9 @@ public class PaymentServiceImpl implements PaymentService {
             log.info("메뉴 정보 조회 성공 - 메뉴 ID: {}", menu.getId());
 
             // MenuNut 조회 또는 생성
-//            menuNutService.createMenuNutIfNotExists(menu.getName());
+            // menuNutService.createMenuNutIfNotExists(menu.getName());
 
-            return new PayDetail(childHistory, menu,detailDto.getQuantity());
+            return new PayDetail(childHistory, menu, detailDto.getQuantity());
         }).collect(Collectors.toList());
 
         childHistory.getPayDetails().addAll(payDetailList);
@@ -435,6 +434,10 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public void chargePoint(ChargePointReqDto dto) {
         log.info("포인트 충전 시작 - 부모 ID: {}, 충전 금액: {}", dto.getUserId(), dto.getAmount());
+        // [추가] 이미 처리된 결제인지 먼저 확인 (멱등성 보장)
+        if (parentHistoryRepository.existsByImpUid(dto.getImpUid())) {
+            throw new SsookException(ErrorCode.ALREADY_PROCESSED_PAYMENT); // 이미 처리된 결제 에러
+        }
 
         // 부모 유저의 존재 여부 확인
         Parent parent = parentRepository.findById(dto.getUserId())
@@ -451,15 +454,16 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("포인트 충전 완료 - 부모 ID: {}, 충전 후 잔액: {}", dto.getUserId(), newPointBalance);
 
         // 부모 내역 저장
-        saveParentHistory(parent, PayType.RECHARGE, dto.getAmount(), newPointBalance);
+        saveParentHistory(parent, PayType.RECHARGE, dto.getAmount(), newPointBalance, dto.getImpUid());
     }
 
-    private void saveParentHistory(Parent parent, PayType type, int price, int balance) {
+    private void saveParentHistory(Parent parent, PayType type, int price, int balance, String impUid) {
         ParentHistory parentHistory = new ParentHistory();
         parentHistory.setParent(parent);
         parentHistory.setType(type);
         parentHistory.setPrice(price);
         parentHistory.setBalance(balance);
+        parentHistory.setImpUid(impUid);
         parentHistory.setCreatedAt(LocalDateTime.now());
         parentHistoryRepository.save(parentHistory);
         log.info("부모 내역 저장 완료 - 부모 ID: {}, 내역 ID: {}", parent.getParentId(), parentHistory.getId());
@@ -510,7 +514,7 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("카드 정보 변경 완료 - 자녀 ID: {}", childId);
     }
 
-    //  최근 일주일 동안 먹은 메뉴 리스트 조회
+    // 최근 일주일 동안 먹은 메뉴 리스트 조회
     @Override
     public List<String> getMenuListWeek(List<Integer> child_history_id_list) {
 

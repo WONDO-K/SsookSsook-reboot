@@ -45,4 +45,7 @@ public class ParentHistory {
     @Column(name = "created_at", updatable = false, nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
 
+    @Column(name = "imp_uid", nullable = false)
+    private String impUid; // 포트원 결제 ID
+
 }
